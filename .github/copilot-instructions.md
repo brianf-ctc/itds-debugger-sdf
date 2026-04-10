@@ -1,0 +1,1 @@
+../../itds/.github/copilot-instructions.md
