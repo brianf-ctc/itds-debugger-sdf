@@ -1,0 +1,65 @@
+HDRH101367143329205570711  250129205570711  PO101032            DI        143329NP                                                                                                               Y
+HDRH201367143329205570711  DP1367                                                                                                                                                                Y
+HDRH201367143329205570711  TC00057                                                                                                                                                               Y
+HDRH201367143329205570711  AY098866                                                                                                                                                              Y
+HDRH201367143329205570711  PGPP99                                                                                                                                                                Y
+HDRH201367143329205570711  VR109496                        CISCO SYSTEMS, INC.                                                                                                                   Y
+HDRH201367143329205570711  IA051079                        INGRAM MICRO INC.                                                                                                                     Y
+HDRH201367143329205570711  RB00057                         Q141-(ALL TCS)-1 PAY                                                                                                                  Y
+HDRH221367143329205570711  PROGRAM NO. 00057                                                                                                                                                     Y
+HDRH221367143329205570711  CHARGES BEGIN DATE: 01/29/25                                                                                                                                          Y
+HDRH221367143329205570711  CHRG TYPE     DAYS     RATE/AMT                                                                                                                                       Y
+HDRH221367143329205570711  N/A  0001-0059      0.00%                                                                                                                                             Y
+HDRH221367143329205570711  "B", as used herein, is the base rate on which interest                                                                                                               Y
+HDRH221367143329205570711  charges are calculated and, unless otherwise specified                                                                                                                Y
+HDRH221367143329205570711   in your financing agreement or any program                                                                                                                           Y
+HDRH221367143329205570711  letter, means, for any calendar month, the highest                                                                                                                    Y
+HDRH221367143329205570711  "Prime Rate" published in the "Money Rates" column                                                                                                                    Y
+HDRH221367143329205570711  of the Wall Street Journal on the first business day                                                                                                                  Y
+HDRH221367143329205570711  of such month.                                                                                                                                                        Y
+HDRH231367143329205570711  Written notice of any objection to the terms of                                                                                                                       Y
+HDRH231367143329205570711  this statement must be received within 30 days of                                                                                                                     Y
+HDRH231367143329205570711  the date of this statement or these terms shall be                                                                                                                    Y
+HDRH231367143329205570711  deemed accepted.                                                                                                                                                      Y
+HDRH301367143329205570711  SOADVANCED NETWORK MANAGEMENT INC.   92143329                                                                                                                         Y
+HDRH321367143329205570711  D24001 JEFFERSON PLAZA NE                                                                                                                                             Y
+HDRH331367143329205570711  D3                                                                                                                                                                    Y
+HDRH341367143329205570711  D4ALBUQUERQUE              NM87109          USA                                                                                                                       Y
+HDRH301367143329205570711  RIWELLS FARGO COMMERCIAL             921367                                                                                                                           Y
+HDRH321367143329205570711  D2DISTRIBUTION FINANCE, LLC                                                                                                                                           Y
+HDRH331367143329205570711  D3PO BOX 206740                                                                                                                                                       Y
+HDRH341367143329205570711  D4DALLAS                   TX753206740      USA                                                                                                                       Y
+HDRH301367143329205570711  STADVANCED NETWORK MANAGMENT           20125586                                                                                                                       Y
+HDRH321367143329205570711  D2304 INVERNESS WAY S                                                                                                                                                 Y
+HDRH331367143329205570711  D3 TL40 VANCE KRIER                                                                                                                                                   Y
+HDRH341367143329205570711  D4ENGLEWOOD                CO801125828      USA                                                                                                                       Y
+HDRH301367143329205570711  MFCISCO SYSTEMS, INC.                92109496                                                                                                                         Y
+HDRH301367143329205570711  DSINGRAM MICRO INC.                  92051079                                                                                                                         Y
+HDRH301367143329205570711  AO                                   921367                                                                                                                           Y
+HDRH401367143329205570711  DALLAS             TX                                                                                                                                                 Y
+HDRH501367143329205570711  AAANGELA CLARK             TE(303) 357-0716                                                                                                                           Y
+HDRH601367143329205570711  007250130                                                                                                                                                             Y
+HDRH601367143329205570711  194250325                                                                                                                                                             Y
+HDRH611367143329205570711                                20250128                                                                                                                                Y
+HDRH631367143329205570711                                  355                                                                                                                                   Y
+HDRH641367143329205570711                                                              0000000000         241219      205570711                                                                  Y
+HDRH651367143329205570711  PMTSCHEDULED PAYMENTS DUE                                                                                                                                             Y
+HDRH661367143329205570711  ZZ202503250000623010                                                                0000000055                                                                        Y
+HDRH661367143329205570711  RB  18.00%                      LATE CHARGE RATE                                                                                                                      Y
+DTLD101367143329205570711  005 0000000001EA0000024311BMNHF2034                  004   0000024311B000000000000{0000000000000{0000000000{                    P                                     Y
+DTLD111367143329205570711  0001                                      MF109496IA051079RB00057                                                                                                     Y
+DTLD151367143329205570711  0001FCISCO ROOM BAR PRO FIRST LIGHT CPNT                                                                                                                              Y
+DTLD411367143329205570711  CS-BARPRO-K9                                                                                                          U867                                            Y
+DTLD101367143329205570711  012 0000000001EA0000006839CMNHE9931                  005   0000006839C000000000000{0000000000000{0000000000{                    P                                     Y
+DTLD111367143329205570711  0002                                      MF109496IA051079RB00057                                                                                                     Y
+DTLD151367143329205570711  0002FNEW RNW CX LEVEL 1 8X5 NBD     SVCS                                                                                                                              Y
+DTLD411367143329205570711  CON-SNT-CSBARPK9                                                                                                      467U                                            Y
+DTLD101367143329205570711  013 0000000001EA0000024311BMNHF2034                  012   0000024311B000000000000{0000000000000{0000000000{                    P                                     Y
+DTLD111367143329205570711  0003                                      MF109496IA051079RB00057                                                                                                     Y
+DTLD151367143329205570711  0003FCISCO ROOM BAR PRO FIRST LIGHT CPNT                                                                                                                              Y
+DTLD411367143329205570711  CS-BARPRO-K9                                                                                                          U867                                            Y
+DTLD101367143329205570711  013 0000000001EA0000006839CMNHE9931                  013   0000006839C000000000000{0000000000000{0000000000{                    P                                     Y
+DTLD111367143329205570711  0004                                      MF109496IA051079RB00057                                                                                                     Y
+DTLD151367143329205570711  0004FNEW RNW CX LEVEL 1 8X5 NBD     SVCS                                                                                                                              Y
+DTLD411367143329205570711  CON-SNT-CSBARPK9                                                                                                      467U                                            Y
+SUMS101367143329205570711  000062301{0000000000{  0000000000{0000{        143329   0000000000{  0000000000{                                                                                      Y

@@ -9,6 +9,7 @@
   <scriptcustomfields>
     <scriptcustomfield scriptid="custscript_deb_orderstat_poid">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>

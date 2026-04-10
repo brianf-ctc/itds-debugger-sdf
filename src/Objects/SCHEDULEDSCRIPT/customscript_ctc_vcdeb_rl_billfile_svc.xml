@@ -9,6 +9,7 @@
   <scriptcustomfields>
     <scriptcustomfield scriptid="custscript_ctc_vcdeb_billsvc_action">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>
@@ -36,6 +37,7 @@
     </scriptcustomfield>
     <scriptcustomfield scriptid="custscript_ctc_vcdeb_billsvc_poid">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>

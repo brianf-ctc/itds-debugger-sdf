@@ -9,6 +9,7 @@
   <scriptcustomfields>
     <scriptcustomfield scriptid="custscript_ctc_vcdeb_dnh_itemreq_srch">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>

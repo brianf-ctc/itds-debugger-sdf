@@ -1,0 +1,53 @@
+HDRH1013671433290796823038 2501290796823038 PO101643            DI        143329NP                                                                                                               Y
+HDRH2013671433290796823038 DP1367                                                                                                                                                                Y
+HDRH2013671433290796823038 TC00127                                                                                                                                                               Y
+HDRH2013671433290796823038 AY314408                                                                                                                                                              Y
+HDRH2013671433290796823038 PGPP99                                                                                                                                                                Y
+HDRH2013671433290796823038 VR050907                        DELL MARKETING, L.P.                                                                                                                  Y
+HDRH2013671433290796823038 IA050907                        DELL MARKETING, L.P.                                                                                                                  Y
+HDRH2013671433290796823038 RB00127                         Q3-(TC45)-1P45D, DS                                                                                                                   Y
+HDRH2213671433290796823038 PROGRAM NO. 00127                                                                                                                                                     Y
+HDRH2213671433290796823038 CHARGES BEGIN DATE: 01/29/25                                                                                                                                          Y
+HDRH2213671433290796823038 CHRG TYPE     DAYS     RATE/AMT                                                                                                                                       Y
+HDRH2213671433290796823038 N/A  0001-0045      0.00%                                                                                                                                             Y
+HDRH2213671433290796823038 "B", as used herein, is the base rate on which interest                                                                                                               Y
+HDRH2213671433290796823038 charges are calculated and, unless otherwise specified                                                                                                                Y
+HDRH2213671433290796823038  in your financing agreement or any program                                                                                                                           Y
+HDRH2213671433290796823038 letter, means, for any calendar month, the highest                                                                                                                    Y
+HDRH2213671433290796823038 "Prime Rate" published in the "Money Rates" column                                                                                                                    Y
+HDRH2213671433290796823038 of the Wall Street Journal on the first business day                                                                                                                  Y
+HDRH2213671433290796823038 of such month.                                                                                                                                                        Y
+HDRH2313671433290796823038 Written notice of any objection to the terms of                                                                                                                       Y
+HDRH2313671433290796823038 this statement must be received within 30 days of                                                                                                                     Y
+HDRH2313671433290796823038 the date of this statement or these terms shall be                                                                                                                    Y
+HDRH2313671433290796823038 deemed accepted.                                                                                                                                                      Y
+HDRH3013671433290796823038 SOADVANCED NETWORK MANAGEMENT INC.   92143329                                                                                                                         Y
+HDRH3213671433290796823038 D24001 JEFFERSON PLAZA NE                                                                                                                                             Y
+HDRH3313671433290796823038 D3                                                                                                                                                                    Y
+HDRH3413671433290796823038 D4ALBUQUERQUE              NM87109          USA                                                                                                                       Y
+HDRH3013671433290796823038 RIWELLS FARGO COMMERCIAL             921367                                                                                                                           Y
+HDRH3213671433290796823038 D2DISTRIBUTION FINANCE, LLC                                                                                                                                           Y
+HDRH3313671433290796823038 D3PO BOX 206740                                                                                                                                                       Y
+HDRH3413671433290796823038 D4DALLAS                   TX753206740      USA                                                                                                                       Y
+HDRH3013671433290796823038 STPLATTE RIVER POWER AUTHORITY         143329                                                                                                                         Y
+HDRH3213671433290796823038 D22003 DANFIELD CT                                                                                                                                                    Y
+HDRH3313671433290796823038 D3FORT COLLINS,     80525                                                                                                                                             Y
+HDRH3413671433290796823038 D4FORT COLLINS               80525          USA                                                                                                                       Y
+HDRH3013671433290796823038 MFDELL MARKETING, L.P.               92050907                                                                                                                         Y
+HDRH3013671433290796823038 DSDELL MARKETING, L.P.               92050907                                                                                                                         Y
+HDRH3013671433290796823038 AO                                   921367                                                                                                                           Y
+HDRH4013671433290796823038 DALLAS             TX                                                                                                                                                 Y
+HDRH5013671433290796823038 AAANGELA CLARK             TE(303) 357-0716                                                                                                                           Y
+HDRH6013671433290796823038 007250130                                                                                                                                                             Y
+HDRH6013671433290796823038 194250315                                                                                                                                                             Y
+HDRH6213671433290796823038 1015210433                                                                                                                                                            Y
+HDRH6313671433290796823038                                 45                                                                                                                                    Y
+HDRH6413671433290796823038 OMAR_HELMY                                                  0000000000         250128      10796823038                                                                Y
+HDRH6513671433290796823038 PMTSCHEDULED PAYMENTS DUE                                                                                                                                             Y
+HDRH6613671433290796823038 ZZ202503150000094180                                                                0000000045                                                                        Y
+HDRH6613671433290796823038 RB  18.00%                      LATE CHARGE RATE                                                                                                                      Y
+DTLD1013671433290796823038 1   0000000010EA0000009418{MN450-BBWR                1     0000000941H000000000000{0000000000000{0000000000{                    P                                     Y
+DTLD1113671433290796823038 0001                                      MF050907IA050907RB00127                                                                                                     Y
+DTLD1513671433290796823038 0001FDell 165W USB-C GaN AC Adapter with Power Cord -                                                                                                                 Y
+DTLD4113671433290796823038 450-BBWR                                                                                                                                                              Y
+SUMS1013671433290796823038 000009418{0000000000{  0000000000{0000{        143329   0000000000{  0000000000{                                                                                      Y

@@ -5,5 +5,9 @@
     <features>
       <feature required="true">SERVERSIDESCRIPTING</feature>
     </features>
+    <objects>
+      <object>custentity_vc_bill_config</object>
+      <object>custbody_ctc_vc_override_ponum</object>
+    </objects>
   </dependencies>
 </manifest>

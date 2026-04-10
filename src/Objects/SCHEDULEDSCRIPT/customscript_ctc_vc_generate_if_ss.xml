@@ -9,6 +9,7 @@
   <scriptcustomfields>
     <scriptcustomfield scriptid="custscript_ctc_vc_genbills_poid">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>
@@ -36,6 +37,7 @@
     </scriptcustomfield>
     <scriptcustomfield scriptid="custscript_ctc_vc_genbills_billfile">
       <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>
