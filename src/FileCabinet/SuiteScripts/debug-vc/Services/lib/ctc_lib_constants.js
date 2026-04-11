@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-11   brianf        Added STANDARD_DATE_FORMAT constant for forced MM/DD/YYYY output
  * 2026-03-27   brianf        Renamed MISSING_SALESORDER to STANDALONE_PO; added INSUFFICIENT_USAGE error constant
  * 2026-02-04   brianf        Added unit test results folder constant and script params
  * 2026-01-29   brianf        Added accurate PARAMS for all MR scripts in SCRIPTS object; restructured ERROR_MSG format; formatted header
@@ -41,6 +42,7 @@ define(function (require) {
             PICK_PACK_SHIP: ns_runtime.isFeatureInEffect({ feature: 'pickpackship' }),
             LOCATIONS: ns_runtime.isFeatureInEffect({ feature: 'locations' }),
             DATE_FORMAT: 'MM/DD/YYYY',
+            STANDARD_DATE_FORMAT: 'MM/DD/YYYY',
             COUNTRY: ns_runtime.country,
             SN_LINE_FIELD_LINK_ID: 'custcol_ctc_xml_serial_num_link',
             ITEM_ID_LOOKUP_COL: 'item',

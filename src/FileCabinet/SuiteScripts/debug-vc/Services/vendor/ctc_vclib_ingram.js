@@ -250,7 +250,7 @@ define(function (require) {
                     // base template copied per sub-order
                     VendorOrderNum: orderResult.ingramOrderNumber, // placeholder; replaced with subOrderNumber below
                     IngramOrderNum: orderResult.ingramOrderNumber, // parent ingram order number
-                    OrderDate: vc2_util.parseToVCDate(orderResult.ingramOrderDate), // normalized order date
+                    OrderDate: vc2_util.parseToVCDateStandard(orderResult.ingramOrderDate), // normalized order date
                     OrderNum: orderResult.customerOrderNumber, // customer PO/reference
                     Status: orderResult.orderStatus, // parent status
                     Total: orderResult.orderTotal // parent total amount
@@ -993,8 +993,8 @@ define(function (require) {
                     /// SET the date values
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!lineData[dateField] || lineData[dateField] == 'NA') return;
-                        lineData[dateField] = vc2_util.parseToVCDate(lineData[dateField]);
-                        var parsedDate = vc2_util.parseToVCDate(lineData[dateField]);
+                        lineData[dateField] = vc2_util.parseToVCDateStandard(lineData[dateField]);
+                        var parsedDate = vc2_util.parseToVCDateStandard(lineData[dateField]);
                         lineData[dateField] =
                             parsedDate && !parsedDate.match(/Invalid/i)
                                 ? parsedDate
@@ -1182,8 +1182,8 @@ define(function (require) {
                         // Date normalization
                         DATE_FIELDS.forEach(function (dateField) {
                             if (!lineData[dateField] || lineData[dateField] === 'NA') return;
-                            lineData[dateField] = vc2_util.parseToVCDate(lineData[dateField]);
-                            var parsedDate = vc2_util.parseToVCDate(lineData[dateField]);
+                            lineData[dateField] = vc2_util.parseToVCDateStandard(lineData[dateField]);
+                            var parsedDate = vc2_util.parseToVCDateStandard(lineData[dateField]);
                             lineData[dateField] =
                                 parsedDate && !parsedDate.match(/Invalid/i)
                                     ? parsedDate

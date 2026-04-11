@@ -199,7 +199,7 @@ define(function (require) {
                 arrOrders.forEach(function (orderInfo) {
                     var orderData = {
                         OrderNum: orderInfo.CustomerPO,
-                        OrderDate: vc2_util.parseToVCDate(orderInfo.DateBooked),
+                        OrderDate: vc2_util.parseToVCDateStandard(orderInfo.DateBooked),
                         Status: orderInfo.Status,
                         Total: orderInfo.TotalOrder,
                         VendorOrderNum: orderInfo.Order_ID
@@ -225,8 +225,8 @@ define(function (require) {
                                 deliv_date: 'NA',
                                 deliv_eta: 'NA',
                                 prom_date: 'NA',
-                                start_date: vc2_util.parseToVCDate(orderInfo.PopStartDate || ''),
-                                end_date: vc2_util.parseToVCDate(orderInfo.PopEndDate || ''),
+                                start_date: vc2_util.parseToVCDateStandard(orderInfo.PopStartDate || ''),
+                                end_date: vc2_util.parseToVCDateStandard(orderInfo.PopEndDate || ''),
 
                                 item_num: lineInfo.Item || 'NA',
                                 item_sku: 'NA',
@@ -282,7 +282,7 @@ define(function (require) {
                 itemArray.forEach(function (itemObj) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
-                        itemObj[dateField] = vc2_util.parseToVCDate(itemObj[dateField]);
+                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField]);
                     });
                 });
 

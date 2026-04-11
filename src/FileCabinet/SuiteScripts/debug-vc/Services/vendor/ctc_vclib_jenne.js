@@ -448,7 +448,7 @@ define(function (require) {
 
                     var orderData = {
                             OrderNum: orderResult.PONumber,
-                            OrderDate: vc2_util.parseToVCDate(orderResult.OrderDate, 'YYYY-MM-DD'),
+                            OrderDate: vc2_util.parseToVCDateStandard(orderResult.OrderDate, 'YYYY-MM-DD'),
                             VendorOrderNum: orderResult.OrderNumber,
                             Lines: [],
                             Source: orderResult
@@ -519,7 +519,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDate(
+                        itemObj[dateField] = vc2_util.parseToVCDateStandard(
                             itemObj[dateField],
                             'YYYY-MM-DD'
                         );

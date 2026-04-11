@@ -600,6 +600,19 @@ define(function (require) {
             return momentLib(dateStr, parseformat).format(format);
         },
         /**
+         * Parses a date string and returns it formatted as MM/DD/YYYY regardless of account format.
+         * Used for order status normalized data to ensure consistent date format across all installations.
+         * @param {string} dateStr
+         * @param {string} [parseformat]
+         * @returns {string}
+         */
+        parseToVCDateStandard: function (dateStr, parseformat) {
+            if (!dateStr || dateStr == 'NA') return 'NA';
+
+            var STANDARD_FORMAT = vc2_constant.GLOBAL.STANDARD_DATE_FORMAT;
+            return momentLib(dateStr, parseformat).format(STANDARD_FORMAT);
+        },
+        /**
          * Formats a date to a NetSuite DATE string using account format.
          * @param {{date?:string|Date,value?:string|Date,dateObj?:Date,parseFormat?:string}|string|Date} option
          * @param {string} [parseformat]

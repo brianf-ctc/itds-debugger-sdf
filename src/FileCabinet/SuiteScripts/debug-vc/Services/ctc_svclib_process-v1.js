@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-11   brianf        Updated momentParse calls to use STANDARD_DATE_FORMAT for vendor-normalized date parsing
  * 2026-03-28   brianf        Replaced purgeInactiveOrderStatusLines with searchInactiveOrderNums and searchInactiveOrderLines; removed unused
  *                            LOG_APP variable; fixed serialSarchObj typo; standardized all logTitle separators to '::'; removed unused vars in
  *                            updateOrderNum and updateMatchedLine; fixed updateMatchedLine logTitle to match function name
@@ -72,11 +73,11 @@ define(function (require) {
                     TXN_LINK: recordData.id,
                     ORDER_NUM: poNum || recordData.tranid,
                     VENDOR_NUM: option.VendorOrderNum,
-                    ORDER_DATE: vclib_utils.momentParse(option.OrderDate),
-                    SHIPPED_DATE: vclib_utils.momentParse(option.ShippedDate),
-                    ETA_DATE: vclib_utils.momentParse(option.ETA),
-                    DELIV_ETA: vclib_utils.momentParse(option.ETD),
-                    DELIV_DATE: vclib_utils.momentParse(option.DelivDate),
+                    ORDER_DATE: vclib_utils.momentParse(option.OrderDate, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    SHIPPED_DATE: vclib_utils.momentParse(option.ShippedDate, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    ETA_DATE: vclib_utils.momentParse(option.ETA, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    DELIV_ETA: vclib_utils.momentParse(option.ETD, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    DELIV_DATE: vclib_utils.momentParse(option.DelivDate, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
 
                     TOTAL: vclib_utils.parseFloat(option.Total == 'NA' ? 0 : option.Total),
                     SOURCE: !util.isString(option.Source)
@@ -162,11 +163,11 @@ define(function (require) {
                         orderLineData.ship_qty !== 'NA'
                             ? orderLineData.ship_qty
                             : 0,
-                    ORDER_DATE: vclib_utils.momentParse(orderLineData.order_date),
-                    SHIPPED_DATE: vclib_utils.momentParse(orderLineData.ship_date),
-                    ETA_DATE: vclib_utils.momentParse(orderLineData.order_eta),
-                    ETD_DATE: vclib_utils.momentParse(orderLineData.deliv_eta),
-                    PROMISED_DATE: vclib_utils.momentParse(orderLineData.prom_date),
+                    ORDER_DATE: vclib_utils.momentParse(orderLineData.order_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    SHIPPED_DATE: vclib_utils.momentParse(orderLineData.ship_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    ETA_DATE: vclib_utils.momentParse(orderLineData.order_eta, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    ETD_DATE: vclib_utils.momentParse(orderLineData.deliv_eta, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    PROMISED_DATE: vclib_utils.momentParse(orderLineData.prom_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
                     CARRIER: orderLineData.carrier,
                     SHIP_METHOD: orderLineData.ship_method,
                     TRACKING: orderLineData.tracking_num,
@@ -178,10 +179,10 @@ define(function (require) {
                             : orderLineData.SKIPPED || orderLineData.NOTSHIPPED;
                     })(),
                     SUBSCRIPTION_ID: orderLineData.subscription_id,
-                    SERVICE_START_DATE: vclib_utils.momentParse(orderLineData.req_start_date),
-                    ETA_SERV_START_DATE: vclib_utils.momentParse(orderLineData.est_start_date),
-                    START_DATE: vclib_utils.momentParse(orderLineData.start_date),
-                    END_DATE: vclib_utils.momentParse(orderLineData.end_date),
+                    SERVICE_START_DATE: vclib_utils.momentParse(orderLineData.req_start_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    ETA_SERV_START_DATE: vclib_utils.momentParse(orderLineData.est_start_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    START_DATE: vclib_utils.momentParse(orderLineData.start_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
+                    END_DATE: vclib_utils.momentParse(orderLineData.end_date, vclib_constants.GLOBAL.STANDARD_DATE_FORMAT),
                     TERM: orderLineData.term,
                     RENEWAL_TERM: orderLineData.renewal_term,
                     BILLING_MODEL: orderLineData.billing_model

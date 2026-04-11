@@ -321,7 +321,7 @@ define(function (require) {
                     InvoiceNo: 'NA'
                 };
                 if (orderInfo.OrderDate && orderInfo.OrderDate !== 'NA') {
-                    orderInfo.OrderDate = vc2_util.parseToVCDate(orderInfo.OrderDate, 'YYYY-MM-DD');
+                    orderInfo.OrderDate = vc2_util.parseToVCDateStandard(orderInfo.OrderDate, 'YYYY-MM-DD');
                 }
 
                 // Check for Order Not Fou
@@ -380,7 +380,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDate(
+                        itemObj[dateField] = vc2_util.parseToVCDateStandard(
                             itemObj[dateField],
                             'YYYY-MM-DD'
                         );

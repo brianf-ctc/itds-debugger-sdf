@@ -102,7 +102,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDate(itemObj[dateField], 'MM/DD/YY');
+                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField], 'MM/DD/YY');
                     });
 
                     returnValue.push(itemObj);
@@ -442,7 +442,7 @@ define(function (require) {
                         Status: Helper.getNodeValue(orderStatusNode, 'MESSAGE') || 'NA',
                         OrderNum: Helper.getNodeValue(orderStatusNode, 'PONUM') || 'NA',
                         VendorOrderNum: Helper.getNodeValue(orderStatusNode, 'ORDERNUM') || 'NA',
-                        OrderDate: vc2_util.parseToVCDate(
+                        OrderDate: vc2_util.parseToVCDateStandard(
                             Helper.getNodeValue(orderStatusNode, 'DATE') || 'NA',
                             'MM/DD/YY'
                         ),

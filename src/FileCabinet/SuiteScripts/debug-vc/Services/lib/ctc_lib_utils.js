@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-11   brianf        Added parseToVCDateStandard for forced MM/DD/YYYY date formatting
  * 2026-03-28   brianf        Replaced cache key truncation with MD5 hashing via N/crypto; added 500KB value guard to setNSCache
  * 2026-03-27   brianf        Added logTitle in tryThese; fixed sendRequestRestlet retry call; fixed SERVICES_RL script/deploy path; fixed LogPrefix ref in vcLog
  * 2026-01-29   brianf        Migrated missing utility functions from CTC_VC2_Lib_Utils.js; refactored to CTC_UTIL object, standards-compliant formatting/naming
@@ -560,6 +561,18 @@ define(function (require) {
             }
 
             return momentLib(dateStr, parseformat).format(format);
+        },
+        /**
+         * Parses a date string and returns it formatted as MM/DD/YYYY regardless of account format.
+         * Used for order status normalized data to ensure consistent date format across all installations.
+         * @param {string} dateStr
+         * @param {string} [parseformat]
+         * @returns {string}
+         */
+        parseToVCDateStandard: function (dateStr, parseformat) {
+            if (!dateStr || dateStr == 'NA') return 'NA';
+
+            return momentLib(dateStr, parseformat).format(CTC_GLOBAL.GLOBAL.STANDARD_DATE_FORMAT);
         },
 
         /**

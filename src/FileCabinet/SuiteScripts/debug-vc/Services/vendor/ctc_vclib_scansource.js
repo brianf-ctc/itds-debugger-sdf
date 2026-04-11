@@ -364,7 +364,7 @@ define(function (require) {
                         OrderNum: orderDetail.PONumber || 'NA',
                         VendorOrderNum:
                             orderDetail.SalesOrderNumber || orderDetail.EndUserPO || 'NA',
-                        OrderDate: vc2_util.parseToVCDate(orderDetail.DateEntered || 'NA'),
+                        OrderDate: vc2_util.parseToVCDateStandard(orderDetail.DateEntered || 'NA'),
                         Total: orderDetail.Total || 'NA',
                         InvoiceNo: 'NA',
                         Source: orderDetail
@@ -531,7 +531,7 @@ define(function (require) {
                         // skip the order_date
                         if (dateField == 'order_date') return;
 
-                        var parsedDate = vc2_util.parseToVCDate(itemObj[dateField], 'YYYY-MM-DD');
+                        var parsedDate = vc2_util.parseToVCDateStandard(itemObj[dateField], 'YYYY-MM-DD');
 
                         itemObj[dateField] =
                             parsedDate && !parsedDate.match(/Invalid/i)

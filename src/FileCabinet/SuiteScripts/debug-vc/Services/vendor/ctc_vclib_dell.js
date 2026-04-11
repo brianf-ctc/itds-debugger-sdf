@@ -192,7 +192,7 @@ define(function (require) {
                     if (!orderDetail || !orderDetail.dellOrders) throw 'Missing Dell Order info';
                     var OrderData = {
                         OrderNum: orderDetail.purchaseOrderNumber,
-                        OrderDate: vc2_util.parseToVCDate(orderDetail.purchaseOrderDate),
+                        OrderDate: vc2_util.parseToVCDateStandard(orderDetail.purchaseOrderDate),
                         Status: orderDetail.purchaseOrderStatus
                     };
 
@@ -313,7 +313,7 @@ define(function (require) {
                 itemArray.forEach(function (itemObj) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
-                        itemObj[dateField] = vc2_util.parseToVCDate(itemObj[dateField]);
+                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField]);
                     });
                 });
 

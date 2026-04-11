@@ -490,7 +490,7 @@ define(function (require) {
                 // parse dates
                 DATE_FIELDS.forEach(function (dateField) {
                     if (lineData[dateField] && lineData[dateField] != 'NA') {
-                        lineData[dateField] = vc2_util.parseToVCDate(lineData[dateField]);
+                        lineData[dateField] = vc2_util.parseToVCDateStandard(lineData[dateField]);
                     }
                 });
                 ['typeCode', 'ContractReference', 'Extension'].forEach(function (nodeData) {
@@ -800,7 +800,7 @@ define(function (require) {
                                                       ) || 'NA'
                                                     : 'NA',
                                             OrderDate:
-                                                vc2_util.parseToVCDate(
+                                                vc2_util.parseToVCDateStandard(
                                                     orderHeaders.OrderDateTime
                                                 ) || 'NA',
                                             QuoteOrderNum:

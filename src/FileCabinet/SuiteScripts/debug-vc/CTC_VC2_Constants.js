@@ -14,6 +14,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-11   brianf        Added STANDARD_DATE_FORMAT constant for forced MM/DD/YYYY output
  * 2026-03-27   brianf        Added ORDERSTATUS_SS and SCRIPT_LOADER_SL to SCRIPT/DEPLOYMENT; renamed MISSING_SALESORDER to STANDALONE_PO
  *
  * @NApiVersion 2.x
@@ -43,6 +44,7 @@ define(function (require) {
             PICK_PACK_SHIP: ns_runtime.isFeatureInEffect({ feature: 'pickpackship' }),
             LOCATIONS: ns_runtime.isFeatureInEffect({ feature: 'locations' }),
             DATE_FORMAT: 'MM/DD/YYYY',
+            STANDARD_DATE_FORMAT: 'MM/DD/YYYY',
             COUNTRY: ns_runtime.country,
             SN_LINE_FIELD_LINK_ID: 'custcol_ctc_xml_serial_num_link',
             ITEM_ID_LOOKUP_COL: 'item',
