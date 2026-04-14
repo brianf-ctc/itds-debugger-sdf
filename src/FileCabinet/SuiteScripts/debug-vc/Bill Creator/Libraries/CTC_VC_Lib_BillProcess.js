@@ -355,9 +355,9 @@ define(function (require) {
                     throw 'MISSING_BILLFILE_LINES';
 
                 this.processBillFileLines(option);
-                this.processBillLines(option);
-
                 this.processCharges(option);
+
+                this.processBillLines(option);
                 this.processChargeLines(option);
 
                 ///calcuate the variances
@@ -1358,7 +1358,6 @@ define(function (require) {
 
                 // Iterate Vendor Bill lines in reverse so we can safely remove lines while iterating
                 Current.Serials = [];
-                var appliedShippingAmount = 0;
                 for (var line = billLines.length - 1; line >= 0; line--) {
                     var vbLineValue = vcs_recordLib.extractLineValues({
                             record: Current.BILL.REC,
@@ -1401,7 +1400,6 @@ define(function (require) {
                                     : 0;
 
                             if (shippingAmount <= 0) throw 'SHIPPING_AMOUNT_ZERO';
-                            appliedShippingAmount += appliedShippingAmount;
 
                             // add to status
                             Current.STATUS.BILLFILE.HasExistingShippingLine = true;
@@ -1411,9 +1409,9 @@ define(function (require) {
                                 sublistId: 'item',
                                 line: line,
                                 values: {
-                                    rate: Current.STATUS.BILLFILE.AllowVariance
-                                        ? appliedVBLine.BILLRATE || appliedVBLine.PRICE
-                                        : appliedVBLine.APPLIEDRATE || appliedVBLine.rate,
+                                    rate: Current.STATUS.BILLFILE.IgnoreVariance
+                                        ? appliedVBLine.APPLIEDRATE || appliedVBLine.rate
+                                        : appliedVBLine.BILLRATE || appliedVBLine.PRICE,
                                     quantity: appliedVBLine.QUANTITY
                                 }
                             });
@@ -1422,7 +1420,7 @@ define(function (require) {
                             Helper.processInventoryDetails({
                                 record: Current.BILL.REC,
                                 lineNo: line,
-                                appliedQty: appliedVBLine.APPLIEDQTY,
+                                appliedQty: appliedVBLine.QUANTITY,
                                 serials: appliedVBLine.SERIAL
                             });
 
@@ -1448,9 +1446,6 @@ define(function (require) {
                     }
                 }
 
-                // reset the shipping
-                Current.TOTAL.SHIPPING = appliedShippingAmount;
-
                 // // reload the bill data
                 if (Current.BILL && Current.BILL.REC) this.loadBill();
             } catch (error) {
@@ -1465,8 +1460,6 @@ define(function (require) {
 
             try {
                 var ChargesCFG = Current.CFG.ChargesDEF || {};
-
-                var totalAppliedCharges = 0;
 
                 // First loop, lets just determine the amounts for each charges and the variances
                 for (var type in ChargesCFG) {
@@ -1504,7 +1497,6 @@ define(function (require) {
 
                             chargeLine.calcAmount = Current.TOTAL.BILL_TAX;
                             chargeLine.varianceAmount = taxVariance;
-                            totalAppliedCharges += taxVariance;
 
                             break;
 
@@ -1529,7 +1521,6 @@ define(function (require) {
 
                             chargeLine.calcAmount = Current.TOTAL.SHIPPING;
                             chargeLine.varianceAmount = shipVariance;
-                            totalAppliedCharges += shipVariance;
 
                             break;
 
@@ -1554,15 +1545,12 @@ define(function (require) {
 
                             chargeLine.calcAmount = Current.TOTAL.CHARGES;
                             chargeLine.varianceAmount = otherVariance;
-                            totalAppliedCharges += otherVariance;
 
                             break;
                     }
 
                     Current.CHARGELINES.push(chargeLine);
                 }
-
-                Current.TOTAL.APPLIED_CHARGES = totalAppliedCharges;
 
                 /// loop thru the discounted
                 var discountedLines = Current.BILLFILE.JSON.discounted;
@@ -1999,6 +1987,7 @@ define(function (require) {
                 returnValue = null;
             try {
                 var BillFileLines = Current.BILLFILE && Current.BILLFILE.LINES,
+                    BillLines = Current.BILL && Current.BILL.LINES,
                     ChargeLines = Current.CHARGELINES;
 
                 var varianceFromLines = 0,
@@ -2016,29 +2005,11 @@ define(function (require) {
                     totalAppliedTax += vclib_util.forceFloat(chargeLine.amounttax);
                 });
 
-                var ActualVarianceAmt = Math.abs(
-                    vclib_util.roundOff(Current.TOTAL.BILL_LINES) +
-                        vclib_util.roundOff(Current.TOTAL.APPLIED_CHARGES) -
-                        vclib_util.roundOff(Current.TOTAL.BILLFILE_TOTAL)
-                );
-
                 ns_util.extend(Current.TOTAL, {
                     VARIANCE_LINES: vclib_util.roundOff(varianceFromLines),
-                    VARIANCE_CHARGES:
-                        ActualVarianceAmt > 0
-                            ? vclib_util.roundOff(varianceFromCharges)
-                            : ActualVarianceAmt,
-                    VARIANCE:
-                        ActualVarianceAmt > 0
-                            ? vclib_util.roundOff(varianceFromLines + varianceFromCharges)
-                            : ActualVarianceAmt
+                    VARIANCE_CHARGES: vclib_util.roundOff(varianceFromCharges),
+                    VARIANCE: vclib_util.roundOff(varianceFromLines + varianceFromCharges)
                 });
-
-                if (ActualVarianceAmt <= 0) {
-                    // Clear the Variance List
-                    Current.Variances = {};
-                    Current.VarianceList = [];
-                }
 
                 if (Current.TOTAL.VARIANCE != 0) Current.STATUS.HasVariance = true;
             } catch (error) {
