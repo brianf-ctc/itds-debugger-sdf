@@ -830,18 +830,36 @@ define(function (require) {
                                                 ciscoLine,
                                                 orderInfo
                                             );
-                                            util.extend(lineData, {
-                                                is_shipped:
-                                                    (LibCiscoAPI.ValidShippedStatus.indexOf(
-                                                        orderInfo.Status.toUpperCase()
-                                                    ) >= 0 &&
-                                                        LibCiscoAPI.ValidLineShippedStatus.indexOf(
-                                                            lineData.line_status.toUpperCase()
-                                                        ) >= 0) ||
-                                                    LibCiscoAPI.ClosedStatus.indexOf(
-                                                        orderInfo.Status.toUpperCase()
-                                                    ) >= 0
-                                            });
+                                            var isSubscriptionLine =
+                                                ciscoLine.typeCode &&
+                                                ciscoLine.typeCode.toUpperCase() === 'SUBSCRIPTION';
+                                            var isShippedStatus =
+                                                (LibCiscoAPI.ValidShippedStatus.indexOf(
+                                                    orderInfo.Status.toUpperCase()
+                                                ) >= 0 &&
+                                                    LibCiscoAPI.ValidLineShippedStatus.indexOf(
+                                                        lineData.line_status.toUpperCase()
+                                                    ) >= 0) ||
+                                                (LibCiscoAPI.ClosedStatus.indexOf(
+                                                    orderInfo.Status.toUpperCase()
+                                                ) >= 0 &&
+                                                    !isSubscriptionLine);
+                                            // Mirror Ingram pattern: set both is_shipped and valid_shipped_status;
+                                            // reset ship_date for non-shipped lines so validateShipped exits early
+                                            // via the valid_shipped_status gate rather than passing on ship_date alone.
+                                            util.extend(
+                                                lineData,
+                                                isShippedStatus
+                                                    ? {
+                                                          is_shipped: true,
+                                                          valid_shipped_status: true
+                                                      }
+                                                    : {
+                                                          is_shipped: false,
+                                                          ship_date: 'NA',
+                                                          valid_shipped_status: false
+                                                      }
+                                            );
                                             OUTPUT.Items.push(lineData);
                                         });
                                         LibOrderStatus.supplementMissingChildData(OUTPUT.Items);
