@@ -8,6 +8,14 @@
     <objects>
       <object>custentity_vc_bill_config</object>
       <object>custbody_ctc_vc_override_ponum</object>
+      <object>custtab_96_t1716438_801</object>
+      <object>custbody_ctc_vc_createdby_vc</object>
+      <object>custcol_ctc_vc_shipped_date</object>
+      <object>custcol_ctc_xml_carrier</object>
+      <object>custcol_ctc_xml_date_order_placed</object>
+      <object>custcol_ctc_xml_dist_order_num</object>
+      <object>custcol_ctc_xml_eta</object>
+      <object>custcol_ctc_xml_ship_method</object>
     </objects>
   </dependencies>
 </manifest>

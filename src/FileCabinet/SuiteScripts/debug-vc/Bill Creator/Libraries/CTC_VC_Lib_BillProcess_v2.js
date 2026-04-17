@@ -8,14 +8,22 @@
  * accordance with the terms of the license agreement you entered into
  * with Catalyst Tech.
  *
- * Script Name: CTC VC | Bill Process Library
+ * Script Name: CTC VC | Bill Process Library (v2 — Revised Variance Model)
  *
  * @author brianf@nscatalyst.com
  * @description Core Bill Creator engine that reads bill files, matches them to POs, evaluates variance, and prepares billing data for vendor bill generation.
+ *              v2 fork: Replaces charge-level "variance" detection with charge-as-component model.
+ *              Only PRICE (line-level) and BILL_TOTAL (residual mismatch) are true variances.
+ *              Tax/shipping/other charges are bill components — added directly, not flagged as variances.
  *
  * CHANGELOGS
  * Date         Author                Remarks
- * 2026-04-17   brianf                Added dash-insensitive invoice matching in searchExistingBills using formula-based normalization to detect duplicates regardless of dashed/undashed format (CST-5009)
+ * 2026-04-16   brianf                Forked from CTC_VC_Lib_BillProcess.js; added revised variance detection model:
+ *                                      - detectVariances: only PRICE (per-line) and BILL_TOTAL (residual) are true variances
+ *                                      - resolveVariances: per-variance resolution (manual override, auto-process, threshold)
+ *                                      - processCharges_v2: treats tax/ship/other as bill components, not variances
+ *                                      - calculateVariance_v2: computes constructed bill total vs invoice total
+ *                                      - Kept original processCharges/calculateVariance intact for reference
  * 2026-03-30   brianf                Restored vendor filter requirement in searchExistingBills: both entityId and invoiceNo must be present to prevent false-positive bill matches across vendors
  * 2026-03-14   brianf                Simplified reportError by consolidating duplicate error collection, cleaning variance message composition, and streamlining status report text assembly; normalized ctc_lib_utils/ctc_lib_error imports to explicit .js paths
  * 2026-03-13   brianf                Refactored bill process error handling to use ctc_lib_error with centralized ERROR_LIST;
@@ -195,6 +203,48 @@ define(function (require) {
             code: 'WITHIN_THRESHOLD',
             message: 'Variance is within the allowed threshold.',
             level: vclib_error.ErrorLevel.WARNING
+        },
+
+        // ── v2 Variance Model ───────────────────────────────────────────────
+        V2_VARIANCE_PRICE: {
+            code: 'V2_VARIANCE_PRICE',
+            message: 'Price variance: vendor rate differs from PO rate.',
+            level: vclib_error.ErrorLevel.WARNING
+        },
+        V2_VARIANCE_BILL_TOTAL: {
+            code: 'V2_VARIANCE_BILL_TOTAL',
+            message: 'Bill total variance: constructed bill total does not match vendor invoice total.',
+            level: vclib_error.ErrorLevel.WARNING
+        },
+        V2_CHARGE_ADDED_TAX: {
+            code: 'V2_CHARGE_ADDED_TAX',
+            message: 'Tax charge added as bill component.',
+            level: vclib_error.ErrorLevel.INFO
+        },
+        V2_CHARGE_ADDED_SHIPPING: {
+            code: 'V2_CHARGE_ADDED_SHIPPING',
+            message: 'Shipping charge added as bill component.',
+            level: vclib_error.ErrorLevel.INFO
+        },
+        V2_CHARGE_ADDED_OTHER: {
+            code: 'V2_CHARGE_ADDED_OTHER',
+            message: 'Other charge added as bill component.',
+            level: vclib_error.ErrorLevel.INFO
+        },
+        V2_CHARGE_ITEM_MISSING: {
+            code: 'V2_CHARGE_ITEM_MISSING',
+            message: 'Charge type is enabled but no NS item is configured.',
+            level: vclib_error.ErrorLevel.ERROR
+        },
+        V2_EXCEED_THRESHOLD: {
+            code: 'V2_EXCEED_THRESHOLD',
+            message: 'Bill total variance exceeds the allowed threshold.',
+            level: vclib_error.ErrorLevel.WARNING
+        },
+        V2_WITHIN_THRESHOLD: {
+            code: 'V2_WITHIN_THRESHOLD',
+            message: 'Bill total variance is within the allowed threshold.',
+            level: vclib_error.ErrorLevel.WARNING
         }
     };
 
@@ -228,6 +278,11 @@ define(function (require) {
             OTHER: 'other',
             MISC: 'miscCharges',
             ADJ: 'adjustment'
+        },
+        // ── v2: Only two true variance types ────────────────────────────────
+        VarianceType_v2 = {
+            PRICE: 'Price',
+            BILL_TOTAL: 'Bill Total'
         };
 
     var BillProcessLib = {
@@ -363,6 +418,12 @@ define(function (require) {
 
                 ///calcuate the variances
                 this.calculateVariance(option);
+
+                // ── v2: Run the revised variance model alongside the original ──
+                // This produces Current.V2 with charge-as-component processing,
+                // PRICE + BILL_TOTAL detection, and per-variance resolution.
+                // Both models run — v1 results on Current, v2 results on Current.V2.
+                this.calculateVariance_v2(option);
 
                 vclib_util.log(logTitle, '// Totals: ', Current.TOTAL);
 
@@ -1648,13 +1709,8 @@ define(function (require) {
                     searchOption.filters.push(['mainname', 'anyof', entityId]);
                 }
                 if (invoiceNo) {
-                    var invoiceNoNormalized = invoiceNo.replace(/-/g, '');
                     searchOption.filters.push('AND');
-                    searchOption.filters.push([
-                        "formulatext: REPLACE({numbertext}, '-', '')",
-                        'is',
-                        invoiceNoNormalized
-                    ]);
+                    searchOption.filters.push(['numbertext', 'is', invoiceNo]);
                 }
 
                 var arrExistingBills = [];
@@ -2022,6 +2078,624 @@ define(function (require) {
                 // collect all the errors
                 vclib_error.log(logTitle, error, ERROR_LIST);
             } finally {
+            }
+
+            return returnValue;
+        },
+
+        // =====================================================================
+        // ██╗   ██╗██████╗     ██╗   ██╗ █████╗ ██████╗ ██╗ █████╗ ███╗   ██╗ ██████╗███████╗
+        // ██║   ██║╚════██╗    ██║   ██║██╔══██╗██╔══██╗██║██╔══██╗████╗  ██║██╔════╝██╔════╝
+        // ██║   ██║ █████╔╝    ██║   ██║███████║██████╔╝██║███████║██╔██╗ ██║██║     █████╗
+        // ╚██╗ ██╔╝██╔═══╝     ╚██╗ ██╔╝██╔══██║██╔══██╗██║██╔══██║██║╚██╗██║██║     ██╔══╝
+        //  ╚████╔╝ ███████╗     ╚████╔╝ ██║  ██║██║  ██║██║██║  ██║██║ ╚████║╚██████╗███████╗
+        //   ╚═══╝  ╚══════╝      ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝
+        //
+        // Revised Variance Detection Model
+        //
+        // Philosophy:
+        //   - Tax, shipping, other charges are BILL COMPONENTS — not variances.
+        //     They get added to the bill using the configured NS items.
+        //   - Only two things are true variances:
+        //     1. PRICE: vendor rate != PO rate on a matched line
+        //     2. BILL_TOTAL: after constructing the full bill (items + charges),
+        //        the constructed total != vendor invoice total
+        //   - Charge config toggles (isVarianceOnTax, etc.) now mean
+        //     "include this charge on the bill" — not "detect variance"
+        // =====================================================================
+
+        /**
+         * @function processCharges_v2
+         * @description Treats tax/shipping/other as bill components.
+         *   If the charge type is enabled and has a configured item, it becomes a
+         *   charge line on the bill. No variance is flagged for the charge itself.
+         *   Stores the charge lines in Current.V2.CHARGELINES.
+         * @param {Object} option
+         * @returns {Array} Current.V2.CHARGELINES
+         */
+        processCharges_v2: function (option) {
+            var logTitle = [LogTitle, 'processCharges_v2'].join('::'),
+                returnValue = null;
+
+            option = option || {};
+
+            try {
+                var ChargesCFG = Current.CFG.ChargesDEF || {};
+                var chargeLines = [];
+
+                for (var type in ChargesCFG) {
+                    var chargeInfo = ChargesCFG[type],
+                        chargeAmount = Current.CHARGES[type] || 0;
+
+                    var chargeLine = vclib_util.extend(
+                        { type: type, amount: chargeAmount },
+                        chargeInfo
+                    );
+
+                    // Determine whether this charge should be included on the bill
+                    // enabled = config toggle is on; amount > 0 = vendor actually sent a value
+                    if (chargeInfo.enabled && chargeAmount != 0) {
+                        if (!chargeInfo.item) {
+                            // Charge enabled but no NS item configured — flag as error, not variance
+                            Helper.setError({
+                                code: 'V2_CHARGE_ITEM_MISSING',
+                                detail: chargeInfo.name
+                            }).log(logTitle);
+
+                            chargeLine.applied = 'F';
+                            chargeLine.chargeAmount = chargeAmount;
+                            chargeLine.varianceAmount = 0;
+                        } else {
+                            chargeLine.applied = 'T';
+                            chargeLine.chargeAmount = chargeAmount;
+                            // The charge amount IS the rate — it's a component, not a diff
+                            chargeLine.varianceAmount = 0;
+
+                            // For TAX: the charge line rate is the difference between
+                            // vendor tax and bill's already-calculated tax.
+                            // This is NOT a variance — it's a tax adjustment to make the bill match.
+                            if (type === ChargeType.TAX) {
+                                // Tax is deferred — will be calculated after other lines settle
+                                chargeLine.deferred = true;
+                                chargeLine.calcAmount = Current.TOTAL.BILL_TAX || 0;
+                            } else if (type === ChargeType.SHIP) {
+                                // Shipping: if PO already has a shipping line, the charge amount
+                                // is the ADDITIONAL shipping beyond what's on the PO.
+                                // If PO has no shipping, the full amount is the charge.
+                                var existingShipping = Current.TOTAL.SHIPPING || 0;
+                                chargeLine.chargeAmount = chargeAmount - existingShipping;
+                                chargeLine.calcAmount = existingShipping;
+                            } else {
+                                // Other / Misc: full amount is the charge
+                                chargeLine.calcAmount = Current.TOTAL.CHARGES || 0;
+                                chargeLine.chargeAmount = chargeAmount - (Current.TOTAL.CHARGES || 0);
+                            }
+
+                            var logCode = type === ChargeType.TAX
+                                ? 'V2_CHARGE_ADDED_TAX'
+                                : type === ChargeType.SHIP
+                                  ? 'V2_CHARGE_ADDED_SHIPPING'
+                                  : 'V2_CHARGE_ADDED_OTHER';
+
+                            vclib_util.log(logTitle, '.. charge component [' + type + ']: ', {
+                                code: logCode,
+                                vendorAmount: chargeAmount,
+                                existingAmount: chargeLine.calcAmount,
+                                chargeToAdd: chargeLine.chargeAmount
+                            });
+                        }
+                    } else {
+                        chargeLine.applied = 'F';
+                        chargeLine.chargeAmount = 0;
+                        chargeLine.varianceAmount = 0;
+                    }
+
+                    chargeLines.push(chargeLine);
+                }
+
+                Current.V2.CHARGELINES = chargeLines;
+                returnValue = chargeLines;
+            } catch (error) {
+                vclib_error.log(logTitle, error, ERROR_LIST);
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * @function detectVariances_v2
+         * @description Pure detection pass. Scans lines for PRICE variance and
+         *   computes BILL_TOTAL variance (constructed total vs invoice total).
+         *   Produces an array of first-class Variance objects on Current.V2.Variances.
+         *   Does NOT make any allow/reject decisions — that's resolveVariances_v2.
+         * @param {Object} option
+         * @returns {Array} Current.V2.Variances
+         */
+        detectVariances_v2: function (option) {
+            var logTitle = [LogTitle, 'detectVariances_v2'].join('::'),
+                returnValue = null;
+
+            option = option || {};
+
+            try {
+                var variances = [];
+                var BillFileLines = Current.BILLFILE && Current.BILLFILE.LINES;
+
+                // ── PRICE VARIANCE (per-line) ───────────────────────────────
+                // A price variance exists when the vendor's rate differs from the PO rate.
+                // This is the only line-level variance. It's contractual — both sides
+                // had a number and they disagree.
+                (BillFileLines || []).forEach(function (vendorLine, idx) {
+                    if (!vendorLine.OrderLine || vclib_util.isEmpty(vendorLine.MATCHING)) return;
+
+                    var poRate = vendorLine.OrderLine.rate || 0,
+                        vendorRate = vendorLine.rate || 0;
+
+                    if (vendorRate != poRate) {
+                        var diffRate = vclib_util.roundOff(vendorRate - poRate, 4),
+                            diffAmount = vclib_util.roundOff(diffRate * vendorLine.QUANTITY, 4);
+
+                        if (Math.abs(diffAmount) > 0) {
+                            variances.push({
+                                code: 'PRICE',
+                                source: 'LINE',
+                                lineIndex: idx,
+                                chargeType: null,
+                                itemName: vendorLine.ITEMNO || vendorLine.itemName,
+                                expected: poRate,
+                                actual: vendorRate,
+                                amount: diffAmount,
+                                quantity: vendorLine.QUANTITY,
+                                autoProcess: !!Current.CFG.MainCFG.autoprocPriceVar,
+                                status: 'DETECTED'
+                            });
+                        }
+                    }
+                });
+
+                // ── BILL TOTAL VARIANCE (aggregate residual) ────────────────
+                // After constructing the bill with all item lines + charge lines,
+                // compare the constructed total against the vendor's invoice total.
+                // Any residual difference is the true aggregate variance.
+
+                // Step 1: Sum item line amounts at VENDOR rates (what the vendor says the items cost)
+                var vendorLineTotal = 0;
+                (BillFileLines || []).forEach(function (vendorLine) {
+                    if (vendorLine.SHIPPING_LINE) return; // skip shipping lines from item total
+                    vendorLineTotal += (vendorLine.rate || 0) * (vendorLine.QUANTITY || 0);
+                });
+                vendorLineTotal = vclib_util.roundOff(vendorLineTotal, 4);
+
+                // Step 2: Sum all charge components the vendor sent
+                var vendorChargesTotal = 0;
+                ['tax', 'shipping', 'other', 'miscCharges'].forEach(function (type) {
+                    vendorChargesTotal += Current.CHARGES[type] || 0;
+                });
+                vendorChargesTotal = vclib_util.roundOff(vendorChargesTotal, 4);
+
+                // Step 3: The constructed total = vendor items + vendor charges
+                var constructedTotal = vclib_util.roundOff(
+                    vendorLineTotal + vendorChargesTotal, 4
+                );
+
+                // Step 4: The vendor's stated invoice total
+                var invoiceTotal = vclib_util.forceFloat(Current.TOTAL.BILLFILE_TOTAL);
+
+                // Step 5: Bill total variance = constructed - invoice
+                // If zero, the vendor's math adds up. No variance.
+                var billTotalVariance = vclib_util.roundOff(
+                    constructedTotal - invoiceTotal, 4
+                );
+
+                // Store the computed totals for reporting
+                ns_util.extend(Current.V2.TOTAL, {
+                    VENDOR_LINES: vendorLineTotal,
+                    VENDOR_CHARGES: vendorChargesTotal,
+                    CONSTRUCTED: constructedTotal,
+                    INVOICE: invoiceTotal,
+                    BILL_TOTAL_VARIANCE: billTotalVariance,
+                    PRICE_VARIANCE: (function () {
+                        var total = 0;
+                        variances.forEach(function (v) {
+                            if (v.code === 'PRICE') total += v.amount;
+                        });
+                        return vclib_util.roundOff(total, 4);
+                    })()
+                });
+
+                vclib_util.log(logTitle, '## v2 Totals: ', Current.V2.TOTAL);
+
+                if (Math.abs(billTotalVariance) > 0) {
+                    variances.push({
+                        code: 'BILL_TOTAL',
+                        source: 'AGGREGATE',
+                        lineIndex: null,
+                        chargeType: null,
+                        itemName: null,
+                        expected: invoiceTotal,
+                        actual: constructedTotal,
+                        amount: billTotalVariance,
+                        quantity: null,
+                        autoProcess: false, // bill total variance is never auto-processed
+                        status: 'DETECTED'
+                    });
+                }
+
+                Current.V2.Variances = variances;
+                Current.V2.HasVariance = variances.length > 0;
+
+                vclib_util.log(logTitle, '## v2 Variances detected: ', variances);
+                returnValue = variances;
+            } catch (error) {
+                vclib_error.log(logTitle, error, ERROR_LIST);
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * @function resolveVariances_v2
+         * @description Resolution pass. Walks each detected variance and applies
+         *   rules in order: manual override → per-variance auto-process → threshold.
+         *   Sets each variance's status to APPROVED or REJECTED.
+         *   Produces the final AllowToBill_v2 decision.
+         * @param {Object} option
+         * @returns {Object} resolution summary
+         */
+        resolveVariances_v2: function (option) {
+            var logTitle = [LogTitle, 'resolveVariances_v2'].join('::'),
+                returnValue = null;
+
+            option = option || {};
+
+            try {
+                var variances = Current.V2.Variances || [];
+
+                // If no variances, nothing to resolve
+                if (!variances.length) {
+                    Current.V2.AllowToBill = true;
+                    Current.V2.Resolution = {
+                        allowed: true,
+                        reasons: ['NO_VARIANCE']
+                    };
+                    returnValue = Current.V2.Resolution;
+                    return returnValue;
+                }
+
+                // ── CHECK 1: Manual Override ────────────────────────────────
+                // AllowVariance = user ticked "Process Variance" on bill file
+                // IgnoreVariance = vendor JSON says skip variance verification
+                if (
+                    Current.STATUS.BILLFILE.AllowVariance ||
+                    Current.STATUS.BILLFILE.IgnoreVariance
+                ) {
+                    var overrideReason = Current.STATUS.BILLFILE.AllowVariance
+                        ? 'MANUAL_ALLOW_VARIANCE'
+                        : 'VENDOR_IGNORE_VARIANCE';
+
+                    variances.forEach(function (v) {
+                        v.status = 'APPROVED';
+                        v.resolvedBy = overrideReason;
+                    });
+
+                    Current.V2.AllowToBill = true;
+                    Current.V2.Resolution = {
+                        allowed: true,
+                        reasons: [overrideReason]
+                    };
+                    returnValue = Current.V2.Resolution;
+
+                    vclib_util.log(logTitle, '## v2 Resolution: manual override', overrideReason);
+                    return returnValue;
+                }
+
+                // ── CHECK 2: Per-Variance Auto-Process ──────────────────────
+                // Unlike the original all-or-nothing approach, each variance is
+                // resolved independently. PRICE variances check autoprocPriceVar.
+                // BILL_TOTAL is never auto-processed (it's a residual — needs review).
+                variances.forEach(function (v) {
+                    if (v.status !== 'DETECTED') return; // already resolved
+
+                    if (v.code === 'PRICE' && v.autoProcess) {
+                        v.status = 'APPROVED';
+                        v.resolvedBy = 'AUTO_PROCESS_PRICE';
+                    }
+                    // BILL_TOTAL is never auto-processed
+                });
+
+                // ── CHECK 3: Threshold ──────────────────────────────────────
+                // Only applies to still-unresolved variances.
+                // The threshold is checked against the absolute sum of unresolved amounts.
+                var thresholdAmount = vclib_util.forceFloat(
+                    Current.CFG.MainCFG.allowedVarianceAmountThreshold
+                );
+
+                if (thresholdAmount > 0) {
+                    var unresolvedTotal = 0;
+                    variances.forEach(function (v) {
+                        if (v.status === 'DETECTED') {
+                            unresolvedTotal += Math.abs(v.amount);
+                        }
+                    });
+                    unresolvedTotal = vclib_util.roundOff(unresolvedTotal, 4);
+
+                    if (thresholdAmount >= unresolvedTotal) {
+                        variances.forEach(function (v) {
+                            if (v.status === 'DETECTED') {
+                                v.status = 'APPROVED';
+                                v.resolvedBy = 'WITHIN_THRESHOLD';
+                            }
+                        });
+                    }
+                }
+
+                // ── Final Decision ──────────────────────────────────────────
+                var hasUnresolved = false,
+                    approvedReasons = [],
+                    rejectedVariances = [];
+
+                variances.forEach(function (v) {
+                    if (v.status === 'DETECTED') {
+                        // Still unresolved after all checks = REJECTED
+                        v.status = 'REJECTED';
+                        v.resolvedBy = 'NO_MATCHING_RULE';
+                        hasUnresolved = true;
+                        rejectedVariances.push(
+                            (VarianceType_v2[v.code] || v.code) +
+                            ' (' + v.amount + ')'
+                        );
+                    } else if (v.status === 'APPROVED') {
+                        if (!vclib_util.inArray(v.resolvedBy, approvedReasons)) {
+                            approvedReasons.push(v.resolvedBy);
+                        }
+                    }
+                });
+
+                Current.V2.AllowToBill = !hasUnresolved;
+                Current.V2.Resolution = {
+                    allowed: !hasUnresolved,
+                    reasons: hasUnresolved ? rejectedVariances : approvedReasons,
+                    thresholdAmount: thresholdAmount || null,
+                    unresolvedCount: rejectedVariances.length
+                };
+
+                vclib_util.log(logTitle, '## v2 Resolution: ', Current.V2.Resolution);
+                returnValue = Current.V2.Resolution;
+            } catch (error) {
+                vclib_error.log(logTitle, error, ERROR_LIST);
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * @function processChargeLines_v2
+         * @description Applies charge component lines to the Vendor Bill record.
+         *   Unlike the original which only adds lines for positive varianceAmount,
+         *   this adds the full charge amount as a bill line — because these are
+         *   bill components, not variance adjustments.
+         *   Handles negative charges (credits) as well.
+         *   Tax is deferred and added last after other lines settle.
+         * @param {Object} option
+         * @returns {boolean}
+         */
+        processChargeLines_v2: function (option) {
+            var logTitle = [LogTitle, 'processChargeLines_v2'].join('::'),
+                returnValue = null;
+
+            option = option || {};
+
+            try {
+                var chargeLines = option.chargeLines || Current.V2.CHARGELINES || [];
+                var taxChargeLine;
+
+                if (!Current.STATUS.BILLFILE.IsActiveEdit) return true;
+                if (
+                    !Current.STATUS.PO.IsBillable &&
+                    !Current.CFG.Features.BILL_IN_ADV &&
+                    (!Current.STATUS.PO.IsReceivable || !Current.STATUS.BILLFILE.AllowToReceive)
+                ) {
+                    return true;
+                }
+
+                if (vclib_util.isEmpty(chargeLines)) return true;
+
+                // If IgnoreVariance is set, use PO rates on item lines — but still add charge components
+                // (the charge components aren't variances; they're part of the bill)
+
+                var salesOrderData =
+                    Current.SO_DATA || Helper.getSalesOrderDetails({ id: Current.PO.ID });
+
+                (chargeLines || []).forEach(function (chargeLine) {
+                    if (chargeLine.applied !== 'T') return;
+                    if (!chargeLine.chargeAmount || chargeLine.chargeAmount == 0) return;
+
+                    // Tax is deferred — processed after all other lines
+                    if (chargeLine.deferred) {
+                        taxChargeLine = chargeLine;
+                        return;
+                    }
+
+                    try {
+                        var addLineOption = {
+                            item: chargeLine.item,
+                            quantity: 1,
+                            rate: chargeLine.chargeAmount,
+                            description: chargeLine.description
+                        };
+
+                        if (salesOrderData && salesOrderData.entity) {
+                            addLineOption.customer =
+                                salesOrderData.entity.value || salesOrderData.entity;
+                        }
+
+                        if (!vclib_util.isEmpty(Current.PO.DATA.TaxCode)) {
+                            addLineOption.taxcode = Current.PO.DATA.TaxCode;
+                        }
+
+                        vclib_util.log(logTitle, '.. v2 adding charge line: ', [
+                            chargeLine.type, addLineOption
+                        ]);
+
+                        var lineNo;
+                        if (chargeLine.hasOwnProperty('lineno') && chargeLine.lineno != null) {
+                            vcs_recordLib.updateLineValues({
+                                record: Current.BILL.REC,
+                                sublistId: 'item',
+                                line: chargeLine.lineno,
+                                values: addLineOption
+                            });
+                            lineNo = chargeLine.lineno;
+                        } else {
+                            lineNo = vcs_recordLib.addNewLine({
+                                record: Current.BILL.REC,
+                                sublistId: 'item',
+                                values: addLineOption
+                            });
+                        }
+
+                        var lineValue = vcs_recordLib.extractLineValues({
+                            record: Current.BILL.REC,
+                            sublistId: 'item',
+                            line: lineNo,
+                            columns: [
+                                'line', 'linenumber', 'item', 'rate', 'quantity',
+                                'amount', 'taxcode', 'taxrate', 'taxrate1', 'taxrate2'
+                            ]
+                        });
+                        lineValue.taxamount = Helper.calculateLineTax(lineValue);
+                        chargeLine.amounttax = lineValue.taxamount;
+                        chargeLine.lineno = lineNo;
+
+                        vclib_util.log(logTitle, '.. v2 added charge line: ', lineValue);
+                    } catch (error) {
+                        Helper.setError({
+                            code: 'V2_CHARGE_ITEM_MISSING',
+                            detail: chargeLine.name
+                        }).log(logTitle);
+                    }
+                });
+
+                // Reload bill after non-tax lines to get updated tax totals
+                if (Current.BILL && Current.BILL.REC) this.loadBill();
+
+                // ── Deferred tax line ───────────────────────────────────────
+                // Tax is added last because the bill's tax total changes as lines are added.
+                // The tax charge line rate = vendor tax - current bill tax (after all other lines).
+                if (
+                    taxChargeLine &&
+                    taxChargeLine.applied === 'T' &&
+                    taxChargeLine.item
+                ) {
+                    var vendorTax = taxChargeLine.amount || 0,
+                        currentBillTax = Current.TOTAL.BILL_TAX || 0,
+                        taxAdjustment = vclib_util.roundOff(vendorTax - currentBillTax, 4);
+
+                    taxChargeLine.calcAmount = currentBillTax;
+                    taxChargeLine.chargeAmount = taxAdjustment;
+
+                    vclib_util.log(logTitle, '.. v2 tax adjustment: ', {
+                        vendorTax: vendorTax,
+                        currentBillTax: currentBillTax,
+                        adjustment: taxAdjustment
+                    });
+
+                    if (Math.abs(taxAdjustment) > 0) {
+                        var taxLineNo = vcs_recordLib.addNewLine({
+                            record: Current.BILL.REC,
+                            sublistId: 'item',
+                            values: {
+                                item: taxChargeLine.item,
+                                quantity: 1,
+                                rate: taxAdjustment,
+                                description: taxChargeLine.description,
+                                taxcode: Current.PO.DATA.TaxCode
+                            }
+                        });
+
+                        var taxLineValue = vcs_recordLib.extractLineValues({
+                            record: Current.BILL.REC,
+                            sublistId: 'item',
+                            line: taxLineNo,
+                            columns: [
+                                'line', 'linenumber', 'item', 'rate', 'quantity',
+                                'amount', 'taxcode', 'taxrate', 'taxrate1', 'taxrate2'
+                            ]
+                        });
+                        taxLineValue.taxamount = Helper.calculateLineTax(taxLineValue);
+                        taxChargeLine.amounttax = taxLineValue.taxamount;
+                        taxChargeLine.lineno = taxLineNo;
+                    } else {
+                        taxChargeLine.chargeAmount = 0;
+                        taxChargeLine.amounttax = 0;
+                    }
+                }
+
+                returnValue = true;
+            } catch (error) {
+                vclib_error.log(logTitle, error, ERROR_LIST);
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * @function calculateVariance_v2
+         * @description Orchestrator for the v2 variance model.
+         *   Initializes v2 state, runs charge processing, detection, and resolution.
+         *   Produces Current.V2 with all variance data and the AllowToBill_v2 flag.
+         *   Called from preprocessBill AFTER the original variance flow completes,
+         *   so both results can be compared side by side.
+         * @param {Object} option
+         * @returns {Object} Current.V2
+         */
+        calculateVariance_v2: function (option) {
+            var logTitle = [LogTitle, 'calculateVariance_v2'].join('::'),
+                returnValue = null;
+
+            option = option || {};
+
+            try {
+                // Initialize v2 state container
+                Current.V2 = {
+                    Variances: [],
+                    CHARGELINES: [],
+                    TOTAL: {},
+                    HasVariance: false,
+                    AllowToBill: false,
+                    Resolution: {}
+                };
+
+                // Step 1: Process charges as bill components (not variances)
+                this.processCharges_v2(option);
+
+                // Step 2: Detect true variances (PRICE + BILL_TOTAL)
+                this.detectVariances_v2(option);
+
+                // Step 3: Resolve variances (manual → auto → threshold)
+                this.resolveVariances_v2(option);
+
+                // Step 4: Log comparison with original model
+                vclib_util.log(logTitle, '## v2 vs v1 comparison: ', {
+                    v1: {
+                        VarianceList: Current.VarianceList,
+                        Variances: Current.Variances,
+                        TOTAL_VARIANCE: Current.TOTAL.VARIANCE,
+                        HasVariance: Current.STATUS.HasVariance,
+                        AllowToBill: Current.STATUS.AllowToBill
+                    },
+                    v2: {
+                        Variances: Current.V2.Variances,
+                        TOTAL: Current.V2.TOTAL,
+                        HasVariance: Current.V2.HasVariance,
+                        AllowToBill: Current.V2.AllowToBill,
+                        Resolution: Current.V2.Resolution
+                    }
+                });
+
+                returnValue = Current.V2;
+            } catch (error) {
+                vclib_error.log(logTitle, error, ERROR_LIST);
             }
 
             return returnValue;

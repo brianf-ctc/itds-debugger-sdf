@@ -8,15 +8,17 @@
  * accordance with the terms of the license agreement you entered into
  * with Catalyst Tech.
  *
- * Script Name: CTC_VC_Retrieve_API_Files_debugger.js
+ * Script Name: CTC VC | Retrieve API Files Debugger SS
  * Script ID: customscript_ctc_vc_retrieve_api_files_debugger
+ *
  * @author brianf@nscatalyst.com
- * @description ScheduledScript (debugger) for retrieving bill files from vendor APIs. Handles chunking, deployment, and error logging for large PO sets. Used for testing and debugging API bill file retrieval in VAR Connect 2.x.
+ * @description Map/Reduce script that calls vendor APIs to retrieve and stage bill files.
  *
  * CHANGELOGS
- * Date         Author                Remarks
- * 2026-03-17   brianf                Converted AMD module loading, normalized module aliases, and fixed fallback deployment return handling
- * 2026-02-27   brianf                Updated script header for standards compliance
+ * Date         Author        Remarks
+ * 2026-03-25   brianf        Fixed copyAndDeploy to return the fallback task result; corrected ns_error alias in forceDeploy
+ * 2026-03-17   brianf        Converted AMD module loading, normalized module aliases, and fixed fallback deployment return handling
+ * 2026-02-27   brianf        Updated script header for standards compliance
  *
  * @NApiVersion 2.x
  * @NModuleScope Public
@@ -31,7 +33,7 @@ define(function (require) {
         ns_task = require('N/task');
 
     // Fixed: align AMD module aliases with the project naming convention.
-    var lib_moment = require('./../Services/lib/moment'),
+    var vclib_moment = require('./../Services/lib/moment'),
         vc2_util = require('./../CTC_VC2_Lib_Utils'),
         vc2_constant = require('./../CTC_VC2_Constants');
 
@@ -295,8 +297,6 @@ define(function (require) {
             })()
         });
 
-        vc2_util.log(logTitle, '>> searchObj: ', searchObj);
-
         var totalPending = searchObj.runPaged().count;
         log.audit(logTitle, LogPrefix + '>> Orders To Process: ' + totalPending);
 
@@ -321,8 +321,8 @@ define(function (require) {
                     scriptId: ns_runtime.getCurrentScript().id,
                     isMapReduce: true,
                     scriptParams: {
-                        custscript_ctc_vc_bc_po_id: chunkPOIds.join(','),
-                        custscript_ctc_vc_bc_vendor_api: ''
+                        custscript_ctcvc_deb_getbillapi_poid: chunkPOIds.join(','),
+                        custscript_ctcvc_deb_getbillapi_vendor: ''
                     }
                 };
                 vc2_util.log(logTitle, '... taskOption: ', taskOption);
@@ -346,14 +346,6 @@ define(function (require) {
         try {
             LogPrefix = '[purchaseorder:' + currentPO + '] MAP | ';
             vc2_util.LogPrefix = LogPrefix;
-
-            /// flatten - only for debugging
-            for (var fld in currentValue) {
-                if (util.isArray(currentValue[fld]) && currentValue[fld].length == 1) {
-                    currentValue[fld] = currentValue[fld][0];
-                }
-            }
-            /////
 
             vc2_util.dumpLog(logTitle, searchResult, '-- searchResult: ');
             vc2_util.log(logTitle, '-- Current Values: ', [currentValue, currentPO]);
@@ -460,7 +452,7 @@ define(function (require) {
                     vclib_billfile.process(
                         currentValue.BillCFG,
                         currentValue.arrInvoices,
-                        lib_moment().unix()
+                        vclib_moment().unix()
                     );
                     // ////
                 } catch (reduce_error) {
@@ -535,6 +527,7 @@ define(function (require) {
                 returnValue;
 
             var searchResults = MAP_REDUCE.getInputData();
+            if (!searchResults) return false;
 
             searchResults.run().each(function (result, idx) {
                 MAP_REDUCE.map.call(this, {

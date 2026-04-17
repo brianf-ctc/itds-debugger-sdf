@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 Catalyst Tech Corp
+ * Copyright (c) 2026 Catalyst Tech Corp
  * All Rights Reserved.
  *
  * This software is the confidential and proprietary information of
@@ -8,40 +8,45 @@
  * accordance with the terms of the license agreement you entered into
  * with Catalyst Tech.
  *
+ * Script Name: CTC VC | Process Bill Files Debugger SS
+ * Script ID: customscript_ctc_vc_process_bills_debugger
+ * @author brianf@nscatalyst.com
+ * @description Map/Reduce script that reads staged bill files, calls the Bill Process library, and creates Vendor Bills.
+ *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-17   brianf        Added dash-insensitive invoice matching in getExistingBill using formula-based normalization to detect duplicates regardless of dashed/undashed format (CST-5009)
+ * 2026-03-28   brianf        Removed dead varianceLines block from reduce finally (Restlet never returns this field)
+ * 2026-03-25   brianf        Optimized reduce deduping, preserved bill JSON for variance updates, and hardened bill-create and
+ *                              cleanup error handling
+ * 2026-03-24   brianf        Converted to AMD require; hardened reduce/finalize; adopted vclib_error for error handling.
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  * @NScriptType ScheduledScript
  */
-define([
-    'N/search',
-    'N/record',
-    'N/runtime',
-    'N/error',
-    './Libraries/CTC_VC_Lib_BillProcess',
-    './Libraries/CTC_VC_Lib_Create_Bill_Files',
-    './../CTC_VC2_Lib_Utils',
-    './../CTC_VC2_Constants',
-    './../Services/ctc_svclib_configlib',
-    './Libraries/moment'
-], function (
-    ns_search,
-    ns_record,
-    ns_runtime,
-    ns_error,
-    vc_billprocess,
-    vc_billfile,
-    vc2_util,
-    vc2_constant,
-    vcs_configLib,
-    moment
-) {
+define(function (require) {
+    var ns_search = require('N/search'),
+        ns_record = require('N/record'),
+        ns_runtime = require('N/runtime'),
+        ns_error = require('N/error');
+
+    var vc_billprocess = require('./Libraries/CTC_VC_Lib_BillProcess'),
+        vc_billfile = require('./Libraries/CTC_VC_Lib_Create_Bill_Files');
+
+    var vc2_util = require('./../CTC_VC2_Lib_Utils'),
+        vc2_constant = require('./../CTC_VC2_Constants');
+
+    var vclib_error = require('./../Services/lib/ctc_lib_error.js');
+
+    var vcs_configLib = require('./../Services/ctc_svclib_configlib');
+
     var LogTitle = 'VC PROCESS BILL',
         VCLOG_APPNAME = 'VAR Connect | Process Bill',
         LogPrefix = '',
         BILL_CREATOR = vc2_constant.Bill_Creator,
         BILL_FILE = vc2_constant.RECORD.BILLFILE,
-        BILLFILE_FLD = vc2_constant.RECORD.BILLFILE.FIELD,
-        LOG_STATUS = vc2_constant.LIST.VC_LOG_STATUS;
+        BILLFILE_FLD = vc2_constant.RECORD.BILLFILE.FIELD;
 
     var SCRIPT = {
         RL_ITEMFF: {
@@ -165,12 +170,6 @@ define([
             return searchObj;
         },
 
-        map: function (context) {
-            var searchResult = JSON.parse(context.value);
-            context.write(searchResult.id, searchResult);
-            return true;
-        },
-
         reduce: function (context) {
             var logTitle = [LogTitle, 'reduce', context.key].join(':');
             vc2_constant.LOG_APPLICATION = VCLOG_APPNAME;
@@ -180,37 +179,28 @@ define([
                     name: 'custscript_ctc_vc_procbill_billfile'
                 }),
                 billInAdv: ns_runtime.getCurrentScript().getParameter({
-                    name: 'custscript_ctc_vc_bc_bill_in_adv'
+                    name: 'custscript_vcdeb_procbill_bill_in_adv'
                 })
             };
             // vc2_util.log(logTitle, '/// To Process: ', context.values.length);
 
             // remove the duplicates
-            var arrBillFilesToProcess = [];
+            var arrBillFilesToProcess = [],
+                processedBillFiles = {};
             for (var i = 0; i < context.values.length; i++) {
                 var currentValues = JSON.parse(context.values[i]);
 
-                /// flatten - only for debugging
-                for (var fld in currentValues.values) {
-                    if (
-                        util.isArray(currentValues.values[fld]) &&
-                        currentValues.values[fld].length == 1
-                    ) {
-                        currentValues.values[fld] = currentValues.values[fld][0];
-                    }
-                }
+                // Fixed: use an ID lookup to avoid repeatedly scanning processed bill files in reduce.
+                if (processedBillFiles[currentValues.id]) continue;
 
-                // check for any existing bill file
-                var matchedBillFile = arrBillFilesToProcess.filter(function (billFile) {
-                    return billFile.id == currentValues.id;
-                });
-                if (matchedBillFile.length) continue;
-
+                processedBillFiles[currentValues.id] = true;
                 arrBillFilesToProcess.push(currentValues);
             }
             vc2_util.log(logTitle, '/// To Process: ', arrBillFilesToProcess.length);
 
-            arrBillFilesToProcess.forEach(function (currentValues) {
+            // Fixed: prefer a plain for loop in MR processing to avoid unnecessary callback overhead.
+            for (i = 0; i < arrBillFilesToProcess.length; i++) {
+                var currentValues = arrBillFilesToProcess[i];
                 var CurrentData = {},
                     UpdateValues = {},
                     ReturnObj = { msg: '' };
@@ -224,16 +214,16 @@ define([
                     util.extend(CurrentData, {
                         billFileId: currentValues.id,
                         PO_ID: currentValues.values[BILLFILE_FLD.PO_LINK].value,
-                        PO_Status: currentValues.values[BILLFILE_FLD.PO_LINK + '.statusref'].value,
+                        PO_Status: currentValues.values['statusref.' + BILLFILE_FLD.PO_LINK].value,
                         PO_StatusText:
-                            currentValues.values[BILLFILE_FLD.PO_LINK + '.statusref'].text,
-                        PO_Vendor: currentValues.values[BILLFILE_FLD.PO_LINK + '.entity'].value,
+                            currentValues.values['statusref.' + BILLFILE_FLD.PO_LINK].text,
+                        PO_Vendor: currentValues.values['entity.' + BILLFILE_FLD.PO_LINK].value,
                         IsFullyBilled: vc2_util.inArray(
-                            currentValues.values[BILLFILE_FLD.PO_LINK + '.statusref'].value,
+                            currentValues.values['statusref.' + BILLFILE_FLD.PO_LINK].value,
                             ['fullyBilled', 'closed']
                         ),
                         IsOrderReceivable: vc2_util.inArray(
-                            currentValues.values[BILLFILE_FLD.PO_LINK + '.statusref'].value,
+                            currentValues.values['statusref.' + BILLFILE_FLD.PO_LINK].value,
                             ['pendingReceipt', 'partiallyReceived', 'pendingBillPartReceived']
                         )
                     });
@@ -248,14 +238,21 @@ define([
 
                     vc2_util.log(logTitle, '// BillFileData: ', BillFileData);
 
+                    // Fixed: keep a writable copy of the bill JSON so variance updates do not fail in finally.
                     util.extend(CurrentData, {
+                        billData: JSON.parse(JSON.stringify(BILLFILE.JSON || {})),
                         IsBillReceivable: !!BillFileData.IS_RCVBLE
                     });
 
                     // load the config
                     var BillCFG = vcs_configLib.billVendorConfig({ poId: CurrentData.PO_ID });
                     vc2_util.log(logTitle, '>> BillCFG', BillCFG);
-                    if (!BillCFG || vc2_util.isEmpty(BillCFG)) throw 'No Bill Config found';
+                    if (!BillCFG || vc2_util.isEmpty(BillCFG)) {
+                        throw {
+                            message: 'No Bill Config found for this vendor',
+                            Status: BILL_CREATOR.Status.CLOSED
+                        };
+                    }
 
                     /// Send to Log
                     // add it to the VC Logs
@@ -324,17 +321,39 @@ define([
                     ReturnObj = billCreateReq.PARSED_RESPONSE;
                     if (ReturnObj.isError) throw ReturnObj.msg;
                 } catch (error) {
-                    vc2_util.logError(logTitle, JSON.stringify(error));
+                    var errorResult = vclib_error.log(logTitle, error);
 
-                    ReturnObj.isError = true;
-                    ReturnObj.errorMsg = vc2_util.extractError(error);
-                    ReturnObj.status = error.Status || BILL_CREATOR.Status.ERROR;
+                    // Check if the bill was actually created despite the error
+                    var invoiceNo = BILLFILE && BILLFILE.JSON ? BILLFILE.JSON.invoice : null;
+                    var arrCreatedBills = null;
+                    if (!vc2_util.isEmpty(invoiceNo)) {
+                        arrCreatedBills = vc_billprocess.searchExistingBills({
+                            entity: CurrentData.PO_Vendor,
+                            invoiceNo: invoiceNo
+                        });
+                    }
 
-                    vc2_util.vcLogError({
-                        title: 'Bill Creator | Error',
-                        recordId: CurrentData.PO_ID,
-                        details: vc2_util.extractError(error)
-                    });
+                    if (arrCreatedBills && arrCreatedBills.length) {
+                        ReturnObj.id = arrCreatedBills[0];
+                        ReturnObj.msg = 'Created the bill but with errors: ' + errorResult.message;
+                        ReturnObj.status = BILL_CREATOR.Status.PROCESSED;
+
+                        vc2_util.vcLog({
+                            title: 'Bill Creator | Warning',
+                            recordId: CurrentData.PO_ID,
+                            warning: ReturnObj.msg
+                        });
+                    } else {
+                        ReturnObj.isError = true;
+                        ReturnObj.errorMsg = errorResult.message;
+                        ReturnObj.status = error.Status || BILL_CREATOR.Status.ERROR;
+
+                        vc2_util.vcLogError({
+                            title: 'Bill Creator | Error',
+                            recordId: CurrentData.PO_ID,
+                            details: errorResult.message
+                        });
+                    }
                 } finally {
                     log.debug(logTitle, '// FINALLY // returnObj: ' + JSON.stringify(ReturnObj));
 
@@ -359,11 +378,6 @@ define([
                         UpdateValues[BILLFILE_FLD.BILL_LINK] = ReturnObj.id || ReturnObj.BILL_ID;
                     }
 
-                    if (ReturnObj.varianceLines) {
-                        CurrentData.billData.varianceLines = ReturnObj.varianceLines;
-                        UpdateValues[BILLFILE_FLD.JSON] = JSON.stringify(CurrentData.billData);
-                    }
-
                     log.debug(logTitle, '>> update fields: ' + JSON.stringify(UpdateValues));
 
                     //if the updateValues object isn't empty update the record
@@ -376,7 +390,7 @@ define([
                     }
                 }
                 vc2_util.log(logTitle, '/// === END =======================================///');
-            });
+            }
         },
 
         summarize: function (summary) {
@@ -438,6 +452,9 @@ define([
             var billFileValues = Helper.fetchBillFile(option);
             var logNotes = billFileValues.custrecord_ctc_vc_bill_log;
 
+            // Fixed: avoid splitting empty bill-file logs during cleanup.
+            if (!logNotes) return;
+
             var logLines = [];
             logNotes.split(/\n/g).map(function (str) {
                 if (logLines.indexOf(str) < 0) logLines.push(str);
@@ -489,7 +506,7 @@ define([
 
                 vc2_util.log(logTitle, '... vendor config: ', returnValue);
             } catch (error) {
-                vc2_util.logError(logTitle, error);
+                vclib_error.log(logTitle, error);
                 throw error;
                 // returnValue = false;
             }
@@ -547,6 +564,8 @@ define([
                     });
                 }
 
+                util.extend(returnValue, itemFFResponse);
+
                 // /// SERIALS PROCESSING ///
                 // if (itemFFResponse.serialData && itemFFResponse.serialData.lines) {
                 //     vc2_util.log(logTitle, '// Processing serials...', itemFFResponse.serialData);
@@ -588,7 +607,8 @@ define([
 
                 // ////////////////////////////
             } catch (error) {
-                vc2_util.logError(logTitle, error);
+                var errorResult = vclib_error.log(logTitle, error);
+                returnValue.msg = errorResult.message;
                 vc_billfile.addNote({
                     id: recordData.id,
                     note: 'Error creating fulfillment : ' + returnValue.msg
@@ -610,6 +630,9 @@ define([
 
             if (!option.invoiceNo) throw 'Missing Invoice No';
 
+            var invoiceNo = option.invoiceNo;
+            var invoiceNoNormalized = invoiceNo.replace(/-/g, '');
+
             var vendorbillSearchObj = ns_search.create({
                 type: 'vendorbill',
                 filters: [
@@ -617,7 +640,7 @@ define([
                     'AND',
                     ['mainname', 'anyof', option.PO_Vendor],
                     'AND',
-                    ['numbertext', 'is', option.invoiceNo],
+                    ["formulatext: REPLACE({numbertext}, '-', '')", 'is', invoiceNoNormalized],
                     'AND',
                     ['mainline', 'is', 'T']
                 ],
@@ -693,14 +716,10 @@ define([
             var searchResults = MAP_REDUCE.getInputData();
 
             searchResults.run().each(function (result, idx) {
-                MAP_REDUCE.map.call(this, {
-                    key: idx,
-                    value: JSON.stringify(result),
-                    write: function (key, value) {
-                        if (!arrReduceData[key]) arrReduceData[key] = [];
-                        arrReduceData[key].push(JSON.stringify(value));
-                    }
-                });
+                // No map stage — group results by key (PO link) for reduce
+                var key = result.id;
+                if (!arrReduceData[key]) arrReduceData[key] = [];
+                arrReduceData[key].push(JSON.stringify(result));
                 return true;
             });
 

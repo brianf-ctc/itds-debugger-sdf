@@ -16,7 +16,6 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
- * 2026-04-03   brianf        Added PO line count check delegating >500 lines to SS via forceDeploy; added getLineCount helper
  * 2026-03-25   brianf        Fixed copyAndDeploy to return the fallback task result; corrected ns_error alias in forceDeploy
  * 2026-03-17   brianf        Converted AMD module loading, normalized module aliases, and fixed fallback deployment return handling
  * 2026-02-27   brianf        Updated script header for standards compliance
@@ -228,49 +227,6 @@ define(function (require) {
             vc2_util.log(logTitle, '// Total deleted: ', idx);
 
             return true;
-        },
-        getLineCount: function (option) {
-            var logTitle = [LogTitle, 'getLineCount'].join('::');
-            option = option || {};
-            var returnValue = 0;
-
-            try {
-                ns_search
-                    .create({
-                        type: 'purchaseorder',
-                        filters: [
-                            ['internalid', 'is', option.poId],
-                            'AND',
-                            ['mainline', 'is', 'F'],
-                            'AND',
-                            ['taxline', 'is', 'F'],
-                            'AND',
-                            ['cogs', 'is', 'F']
-                        ],
-                        columns: [
-                            ns_search.createColumn({
-                                name: 'lineuniquekey',
-                                summary: ns_search.Summary.COUNT
-                            })
-                        ]
-                    })
-                    .run()
-                    .each(function (result) {
-                        returnValue =
-                            parseInt(
-                                result.getValue({
-                                    name: 'lineuniquekey',
-                                    summary: ns_search.Summary.COUNT
-                                }),
-                                10
-                            ) || 0;
-                        return false;
-                    });
-            } catch (error) {
-                vc2_util.logError(logTitle, error);
-            }
-
-            return returnValue;
         }
     };
 
@@ -393,32 +349,6 @@ define(function (require) {
 
             vc2_util.dumpLog(logTitle, searchResult, '-- searchResult: ');
             vc2_util.log(logTitle, '-- Current Values: ', [currentValue, currentPO]);
-
-            // Check PO line count — delegate to Scheduled Script if threshold exceeded
-            var lineCount = Helper.getLineCount({ poId: currentPO });
-            vc2_util.log(logTitle, '... PO line count: ', lineCount);
-
-            if (lineCount > vc2_constant.GLOBAL.MAX_PO_LINES_DELEGATE) {
-                vc2_util.log(logTitle, '** PO line count exceeds threshold, delegating to SS **', {
-                    lineCount: lineCount,
-                    poId: currentPO
-                });
-
-                var taskOption = {
-                    scriptId: vc2_constant.SCRIPT.GETBILLS_API_SS,
-                    scriptParams: {}
-                };
-                taskOption.scriptParams['custscript_ctc_vc_ss_po_id'] = currentPO;
-                taskOption.deployId = Helper.forceDeploy(taskOption);
-
-                vc2_util.vcLog({
-                    title: 'MR Bills Retrieve API | Delegated to SS',
-                    recordId: currentPO,
-                    message: 'PO has ' + lineCount + ' lines; delegated to Scheduled Script'
-                });
-
-                return true;
-            }
 
             /// load the mainConfig
             var MainCFG = vcs_configlib.mainConfig();

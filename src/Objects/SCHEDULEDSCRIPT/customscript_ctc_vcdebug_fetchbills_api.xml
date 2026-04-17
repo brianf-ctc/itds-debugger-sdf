@@ -1,0 +1,83 @@
+<scheduledscript scriptid="customscript_ctc_vcdebug_fetchbills_api">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>CTC VC | Retrieve API Files MR [D]</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/debug-vc/Bill Creator/CTC_VC_Retrieve_API_Files_debugger.js]</scriptfile>
+  <scriptcustomfields>
+    <scriptcustomfield scriptid="custscript_ctcvc_deb_getbillapi_vendor">
+      <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
+      <applyformatting>F</applyformatting>
+      <checkspelling>F</checkspelling>
+      <defaultchecked>F</defaultchecked>
+      <defaultselection></defaultselection>
+      <defaultvalue></defaultvalue>
+      <description></description>
+      <displayheight></displayheight>
+      <displaytype>NORMAL</displaytype>
+      <displaywidth></displaywidth>
+      <dynamicdefault></dynamicdefault>
+      <fieldtype>INTEGER</fieldtype>
+      <help></help>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+      <label>Bill Config ID</label>
+      <linktext></linktext>
+      <maxlength></maxlength>
+      <maxvalue></maxvalue>
+      <minvalue></minvalue>
+      <onparentdelete>NO_ACTION</onparentdelete>
+      <searchlevel>2</searchlevel>
+      <setting></setting>
+      <storevalue>T</storevalue>
+    </scriptcustomfield>
+    <scriptcustomfield scriptid="custscript_ctcvc_deb_getbillapi_poid">
+      <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
+      <applyformatting>F</applyformatting>
+      <checkspelling>F</checkspelling>
+      <defaultchecked>F</defaultchecked>
+      <defaultselection></defaultselection>
+      <defaultvalue></defaultvalue>
+      <description></description>
+      <displayheight></displayheight>
+      <displaytype>NORMAL</displaytype>
+      <displaywidth>40</displaywidth>
+      <dynamicdefault></dynamicdefault>
+      <fieldtype>TEXT</fieldtype>
+      <help></help>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+      <label>PO Id</label>
+      <linktext></linktext>
+      <maxlength></maxlength>
+      <maxvalue></maxvalue>
+      <minvalue></minvalue>
+      <onparentdelete></onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype></selectrecordtype>
+      <setting></setting>
+      <storevalue>T</storevalue>
+    </scriptcustomfield>
+  </scriptcustomfields>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy1">
+      <custscript_ctcvc_deb_getbillapi_poid></custscript_ctcvc_deb_getbillapi_poid>
+      <custscript_ctcvc_deb_getbillapi_vendor></custscript_ctcvc_deb_getbillapi_vendor>
+      <isdeployed>T</isdeployed>
+      <loglevel>ERROR</loglevel>
+      <status>TESTING</status>
+      <title>CTC VC | Retrieve API Files MR [D]</title>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2025-09-17</startdate>
+          <starttime>01:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

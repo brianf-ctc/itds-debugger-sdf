@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-17   brianf        Added dash-insensitive invoice matching in getExistingBill using formula-based normalization to detect duplicates regardless of dashed/undashed format (CST-5009)
  * 2026-03-28   brianf        Removed dead varianceLines block from reduce finally (Restlet never returns this field)
  * 2026-03-25   brianf        Optimized reduce deduping, preserved bill JSON for variance updates, and hardened bill-create and
  *                              cleanup error handling
@@ -629,6 +630,9 @@ define(function (require) {
 
             if (!option.invoiceNo) throw 'Missing Invoice No';
 
+            var invoiceNo = option.invoiceNo;
+            var invoiceNoNormalized = invoiceNo.replace(/-/g, '');
+
             var vendorbillSearchObj = ns_search.create({
                 type: 'vendorbill',
                 filters: [
@@ -636,7 +640,7 @@ define(function (require) {
                     'AND',
                     ['mainname', 'anyof', option.PO_Vendor],
                     'AND',
-                    ['numbertext', 'is', option.invoiceNo],
+                    ["formulatext: REPLACE({numbertext}, '-', '')", 'is', invoiceNoNormalized],
                     'AND',
                     ['mainline', 'is', 'T']
                 ],

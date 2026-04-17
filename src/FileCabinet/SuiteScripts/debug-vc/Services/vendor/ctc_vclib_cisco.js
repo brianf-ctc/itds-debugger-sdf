@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 Catalyst Tech Corp
+ * Copyright (c) 2026 Catalyst Tech Corp
  * All Rights Reserved.
  *
  * This software is the confidential and proprietary information of
@@ -8,9 +8,16 @@
  * accordance with the terms of the license agreement you entered into
  * with Catalyst Tech.
  *
- * Module Name: VC Services | Cisco API
+ * Script Name: Cisco Vendor Library
+ *
  * @author brianf@nscatalyst.com
  * @description Cisco PO status library and vendor connector for VC Services.
+ *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-14   brianf        • Refactored shipped status logic with isSubscriptionLine and isShippedStatus vars
+ *                            • Updated is_shipped to also set valid_shipped_status field for consistency
+ *                            • Reset ship_date to 'NA' for non-shipped lines to align with Ingram pattern
  *
  * @NApiVersion 2.x
  * @NModuleScope Public
@@ -834,14 +841,14 @@ define(function (require) {
                                                 ciscoLine.typeCode &&
                                                 ciscoLine.typeCode.toUpperCase() === 'SUBSCRIPTION';
                                             var isShippedStatus =
-                                                (LibCiscoAPI.ValidShippedStatus.indexOf(
-                                                    orderInfo.Status.toUpperCase()
-                                                ) >= 0 &&
-                                                    LibCiscoAPI.ValidLineShippedStatus.indexOf(
-                                                        lineData.line_status.toUpperCase()
-                                                    ) >= 0) ||
+                                                    (LibCiscoAPI.ValidShippedStatus.indexOf(
+                                                        orderInfo.Status.toUpperCase()
+                                                    ) >= 0 &&
+                                                        LibCiscoAPI.ValidLineShippedStatus.indexOf(
+                                                            lineData.line_status.toUpperCase()
+                                                        ) >= 0) ||
                                                 (LibCiscoAPI.ClosedStatus.indexOf(
-                                                    orderInfo.Status.toUpperCase()
+                                                        orderInfo.Status.toUpperCase()
                                                 ) >= 0 &&
                                                     !isSubscriptionLine);
                                             // Mirror Ingram pattern: set both is_shipped and valid_shipped_status;
