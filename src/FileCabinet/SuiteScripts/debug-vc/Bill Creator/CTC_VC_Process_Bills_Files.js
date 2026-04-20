@@ -640,7 +640,7 @@ define(function (require) {
                     'AND',
                     ['mainname', 'anyof', option.PO_Vendor],
                     'AND',
-                    ["formulatext: REPLACE({numbertext}, '-', '')", 'is', invoiceNoNormalized],
+                    ["formulatext: REPLACE({tranid}, '-', '')", 'is', invoiceNoNormalized],
                     'AND',
                     ['mainline', 'is', 'T']
                 ],

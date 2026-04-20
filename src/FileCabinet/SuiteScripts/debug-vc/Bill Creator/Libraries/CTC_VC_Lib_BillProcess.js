@@ -1651,7 +1651,7 @@ define(function (require) {
                     var invoiceNoNormalized = invoiceNo.replace(/-/g, '');
                     searchOption.filters.push('AND');
                     searchOption.filters.push([
-                        "formulatext: REPLACE({numbertext}, '-', '')",
+                        "formulatext: REPLACE({tranid}, '-', '')",
                         'is',
                         invoiceNoNormalized
                     ]);
