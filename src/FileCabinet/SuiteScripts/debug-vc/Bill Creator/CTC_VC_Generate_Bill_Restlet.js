@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-20   brianf        CST-5022: Added explicit format array and strict mode to 3 unsafe moment() calls (trandate, fulfillDate, duedate) to prevent date corruption
  * 2026-03-28   brianf        Added id field to success response for MR BILL_LINK mapping; added isError and status to
  *                              validateBill early-return so MR catch block fires correctly
  * 2026-03-25   brianf        Refined bill save/return handling, aligned fulfill-date and validation logging, and removed the
@@ -231,7 +232,7 @@ define(function (require) {
                     tranid: BILLPROC.BILLFILE.JSON.invoice,
                     /// SET the trandate
                     trandate: ns_format.parse({
-                        value: moment(BILLPROC.BILLFILE.JSON.date).toDate(),
+                        value: moment(BILLPROC.BILLFILE.JSON.date, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
                         type: ns_format.Type.DATE
                     }),
                     custbody_ctc_vc_createdby_vc: true,
@@ -248,7 +249,7 @@ define(function (require) {
 
                     if (fulfillDate) {
                         updateBillValues.trandate = ns_format.parse({
-                            value: moment(fulfillDate).toDate(),
+                            value: moment(fulfillDate, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
                             type: ns_format.Type.DATE
                         });
                     }
@@ -257,7 +258,7 @@ define(function (require) {
                 /// SET DUE DATE
                 if (BILLPROC.BILLFILE.DATA.DUEDATE) {
                     updateBillValues.duedate = ns_format.parse({
-                        value: moment(BILLPROC.BILLFILE.DATA.DUEDATE).toDate(),
+                        value: moment(BILLPROC.BILLFILE.DATA.DUEDATE, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
                         type: ns_format.Type.DATE
                     });
                 }
