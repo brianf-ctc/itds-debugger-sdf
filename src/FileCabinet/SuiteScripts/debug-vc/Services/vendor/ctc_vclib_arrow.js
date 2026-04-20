@@ -326,7 +326,7 @@ define(function (require) {
                             Status: OrderDetail.OrderStatusDescription,
                             OrderNum: OrderDetail.Reseller ? OrderDetail.Reseller.PONumber : null,
                             VendorOrderNum: OrderDetail.ArrowSONumber,
-                            OrderDate: vc2_util.parseToVCDateStandard(
+                            OrderDate: vc2_util.formatToVCDate(
                                 OrderDetail.ArrowSODate,
                                 'MM/DD/YYYY'
                             ),
@@ -352,7 +352,7 @@ define(function (require) {
                                 order_num: orderData.VendorOrderNum || 'NA',
                                 order_status: orderData.Status || 'NA',
 
-                                order_date: vc2_util.parseToStandardDate(orderData.OrderDate) || 'NA',
+                                order_date: vc2_util.formatToVCDate(orderData.OrderDate) || 'NA',
                                 ship_date: 'NA',
                                 order_eta: 'NA',
                                 deliv_eta: 'NA',
@@ -472,10 +472,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(
-                            itemObj[dateField],
-                            'MM/DD/YYYY'
-                        );
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
                 });
 

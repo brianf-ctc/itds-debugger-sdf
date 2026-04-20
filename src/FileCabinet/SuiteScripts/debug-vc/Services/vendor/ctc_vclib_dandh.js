@@ -102,7 +102,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField], 'MM/DD/YY');
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
 
                     returnValue.push(itemObj);
@@ -221,9 +221,9 @@ define(function (require) {
                     order_num: Helper.getNodeValue(parentNode, 'ORDERNUM') || 'NA',
                     order_status: Helper.getNodeValue(parentNode, 'MESSAGE') || 'NA',
 
-                    order_date: vc2_util.parseToStandardDate(Helper.getNodeValue(parentNode, 'DATE')) || 'NA',
+                    order_date: vc2_util.formatToVCDate(Helper.getNodeValue(parentNode, 'DATE')) || 'NA',
                     ship_date: 'NA',
-                    order_eta: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'ETA')) || 'NA',
+                    order_eta: vc2_util.formatToVCDate(Helper.getNodeValue(itemNode, 'ETA')) || 'NA',
                     deliv_eta: 'NA',
                     deliv_date: 'NA',
                     prom_date: 'NA',
@@ -442,7 +442,7 @@ define(function (require) {
                         Status: Helper.getNodeValue(orderStatusNode, 'MESSAGE') || 'NA',
                         OrderNum: Helper.getNodeValue(orderStatusNode, 'PONUM') || 'NA',
                         VendorOrderNum: Helper.getNodeValue(orderStatusNode, 'ORDERNUM') || 'NA',
-                        OrderDate: vc2_util.parseToVCDateStandard(
+                        OrderDate: vc2_util.formatToVCDate(
                             Helper.getNodeValue(orderStatusNode, 'DATE') || 'NA',
                             'MM/DD/YY'
                         ),

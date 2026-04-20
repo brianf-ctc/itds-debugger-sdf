@@ -193,9 +193,7 @@ define(['../../CTC_VC2_Lib_Utils', '../Libraries/moment', '../Libraries/lodash']
 
                         var myObj = {
                             po: CURRENT.poNum,
-                            date: moment(invoiceDetail.InvoiceDate, 'DD-MMM-YY').format(
-                                'MM/DD/YYYY'
-                            ),
+                            date: vc2_util.formatToVCDate(invoiceDetail.InvoiceDate, 'DD-MMM-YY'),
                             invoice: invoiceDetail.InvoiceNumber,
                             total: invoiceDetail.TotalInvAmount * 1,
                             charges: {

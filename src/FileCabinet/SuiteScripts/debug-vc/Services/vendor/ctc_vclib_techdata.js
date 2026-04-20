@@ -24,10 +24,10 @@ define(function (require) {
     var vc2_util = require('../../CTC_VC2_Lib_Utils'),
         vc2_constant = require('../../CTC_VC2_Constants');
 
-    var moment = require('../lib/moment');
-
     var ns_xml = require('N/xml'),
         ns_search = require('N/search');
+
+    var DATE_FIELDS = vc2_constant.DATE_FIELDS;
 
     var LogTitle = 'WS:TechData';
     var Helper = {
@@ -205,10 +205,10 @@ define(function (require) {
                         line_num: Helper.getNodeValue(arrItemNodes[i], 'OrderLineNbr') || 'NA',
                         item_num: Helper.getNodeValue(arrItemNodes[i], 'MfgItemNbr') || 'NA',
                         order_num: Helper.getNodeValue(orderInfo, 'InvoiceNbr') || 'NA',
-                        order_date: vc2_util.parseToStandardDate(Helper.getNodeValue(orderInfo, 'OrderDate')) || 'NA',
-                        order_eta: vc2_util.parseToStandardDate(Helper.getNodeValue(orderInfo, 'EstShipDate')) || 'NA',
+                        order_date: vc2_util.formatToVCDate(Helper.getNodeValue(orderInfo, 'OrderDate')) || 'NA',
+                        order_eta: vc2_util.formatToVCDate(Helper.getNodeValue(orderInfo, 'EstShipDate')) || 'NA',
                         order_status: Helper.getNodeValue(orderInfo, 'OrderStatus') || 'NA',
-                        ship_date: vc2_util.parseToStandardDate(Helper.getNodeValue(containerInfo, 'DateShipped')) || 'NA',
+                        ship_date: vc2_util.formatToVCDate(Helper.getNodeValue(containerInfo, 'DateShipped')) || 'NA',
                         ship_qty: Helper.getNodeValue(arrItemNodes[i], 'QtyShipped') || 'NA',
                         tracking_num: Helper.getNodeValue(containerInfo, 'ContainerID') || 'NA',
                         vendorSKU: Helper.getNodeValue(arrItemNodes[i], 'TechDataItemNbr') || 'NA',
@@ -260,7 +260,7 @@ define(function (require) {
                         orderItem.ship_qty &&
                         orderItem.ship_qty != 0
                     ) {
-                        var shippedDate = moment(orderItem.ship_date, 'MM/DD/YY').toDate();
+                        var shippedDate = vc2_util.vendorDateToObj(orderItem.ship_date, vc2_constant.GLOBAL.STANDARD_DATE_FORMAT);
                         vc2_util.log(logTitle, '>> shipped date: ', [
                             shippedDate,
                             util.isDate(shippedDate),
@@ -274,6 +274,13 @@ define(function (require) {
                     log.audit(logTitle, LogPrefix + '... item found: ' + JSON.stringify(orderItem));
                     itemArray.push(orderItem);
                 }
+
+                itemArray.forEach(function (itemObj) {
+                    DATE_FIELDS.forEach(function (dateField) {
+                        if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
+                    });
+                });
 
                 // returnValue = itemArray;
                 util.extend(returnValue, {

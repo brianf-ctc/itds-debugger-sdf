@@ -21,7 +21,6 @@ define(function (require) {
         vc2_constant = require('../../CTC_VC2_Constants');
 
     var ns_xml = require('N/xml');
-    var moment = require('../lib/moment');
 
     var LogTitle = 'WS:Jenne',
         LogPrefix;
@@ -277,8 +276,8 @@ define(function (require) {
 
                 util.extend(orderInfo, {
                     order_num: orderNode.OrderNumber,
-                    order_date: vc2_util.parseToStandardDate(orderNode.OrderDate) || 'NA',
-                    ship_date: vc2_util.parseToStandardDate(orderNode.DateShipped) || 'NA',
+                    order_date: vc2_util.formatToVCDate(orderNode.OrderDate) || 'NA',
+                    ship_date: vc2_util.formatToVCDate(orderNode.DateShipped) || 'NA',
                     carrier: 'NA',
                     line_num: 'NA',
                     item_num: 'NA',
@@ -324,7 +323,7 @@ define(function (require) {
                 util.extend(shipData, {
                     carrier: shipNode.ShipVia,
                     tracking: shipNode.TrackingNo,
-                    ship_date: vc2_util.parseToStandardDate(shipNode.DateShipped) || 'NA'
+                    ship_date: vc2_util.formatToVCDate(shipNode.DateShipped) || 'NA'
                 });
 
                 var shipDetails =
@@ -448,7 +447,7 @@ define(function (require) {
 
                     var orderData = {
                             OrderNum: orderResult.PONumber,
-                            OrderDate: vc2_util.parseToVCDateStandard(orderResult.OrderDate, 'YYYY-MM-DD'),
+                            OrderDate: vc2_util.formatToVCDate(orderResult.OrderDate, 'YYYY-MM-DD'),
                             VendorOrderNum: orderResult.OrderNumber,
                             Lines: [],
                             Source: orderResult
@@ -457,8 +456,8 @@ define(function (require) {
                             order_num: orderResult.OrderNumber,
                             order_status: 'NA',
 
-                            order_date: vc2_util.parseToStandardDate(orderResult.OrderDate) || 'NA',
-                            ship_date: vc2_util.parseToStandardDate(orderResult.DateShipped) || 'NA',
+                            order_date: vc2_util.formatToVCDate(orderResult.OrderDate) || 'NA',
+                            ship_date: vc2_util.formatToVCDate(orderResult.DateShipped) || 'NA',
                             order_eta: 'NA',
                             deliv_eta: 'NA',
                             deliv_date: 'NA',
@@ -488,7 +487,7 @@ define(function (require) {
                         util.extend(itemObj, {
                             carrier: shipNode.ShipVia,
                             tracking_num: shipNode.TrackingNo,
-                            ship_date: vc2_util.parseToStandardDate(shipNode.DateShipped) || 'NA'
+                            ship_date: vc2_util.formatToVCDate(shipNode.DateShipped) || 'NA'
                         });
 
                         var shipDetails = shipNode.ASNcartonDetails
@@ -519,10 +518,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(
-                            itemObj[dateField],
-                            'YYYY-MM-DD'
-                        );
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
                 });
 

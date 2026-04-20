@@ -163,12 +163,12 @@ define(function (require) {
                         Helper.getNodeValue(itemNode.parentNode.parentNode, 'Code') || 'NA',
 
                     order_date:
-                        vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode.parentNode.parentNode, 'PODatetime')) || 'NA',
-                    ship_date: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'ShipDatetime')) || 'NA',
-                    order_eta: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'EstimatedShipDate')) || 'NA',
+                        vc2_util.formatToVCDate(Helper.getNodeValue(itemNode.parentNode.parentNode, 'PODatetime')) || 'NA',
+                    ship_date: vc2_util.formatToVCDate(Helper.getNodeValue(itemNode, 'ShipDatetime')) || 'NA',
+                    order_eta: vc2_util.formatToVCDate(Helper.getNodeValue(itemNode, 'EstimatedShipDate')) || 'NA',
 
                     deliv_eta:
-                        vc2_util.parseToStandardDate(
+                        vc2_util.formatToVCDate(
                             Helper.getNodeValue(itemNode, 'EstimatedDeliveryDate') ||
                             Helper.getNodeValue(itemNode, 'EstimateDeliveryDate')
                         ) || 'NA',
@@ -322,7 +322,7 @@ define(function (require) {
                     InvoiceNo: 'NA'
                 };
                 if (orderInfo.OrderDate && orderInfo.OrderDate !== 'NA') {
-                    orderInfo.OrderDate = vc2_util.parseToVCDateStandard(orderInfo.OrderDate, 'YYYY-MM-DD');
+                    orderInfo.OrderDate = vc2_util.formatToVCDate(orderInfo.OrderDate, 'YYYY-MM-DD');
                 }
 
                 // Check for Order Not Fou
@@ -381,10 +381,7 @@ define(function (require) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
 
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(
-                            itemObj[dateField],
-                            'YYYY-MM-DD'
-                        );
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
                 });
 

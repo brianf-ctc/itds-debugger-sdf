@@ -22,8 +22,11 @@
  *
  */
 define(function (require) {
-    var vc2_util = require('../../CTC_VC2_Lib_Utils');
+    var vc2_util = require('../../CTC_VC2_Lib_Utils'),
+        vc2_constant = require('../../CTC_VC2_Constants');
     var error = require('N/error');
+
+    var DATE_FIELDS = vc2_constant.DATE_FIELDS;
 
     var CURRENT = {};
     var WEFI = {};
@@ -171,7 +174,7 @@ define(function (require) {
                             line_status: wfOrder.statusCode,
                             ship_qty: wfInvoiceLine.quantity,
                             order_date: '',
-                            ship_date: vc2_util.parseToStandardDate(shippedDate) || 'NA',
+                            ship_date: vc2_util.formatToVCDate(shippedDate) || 'NA',
                             order_eta: '', // Not available on the API
                             order_eta_ship: '',
                             //order_num: wfInvoiceLine.invoiceId.toString(),	// v1.10
@@ -198,6 +201,13 @@ define(function (require) {
 
             // Return wefi po lines
             // returnValue = arrWefiPOLines;
+
+            arrWefiPOLines.forEach(function (itemObj) {
+                DATE_FIELDS.forEach(function (dateField) {
+                    if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
+                    itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
+                });
+            });
 
             util.extend(returnValue, {
                 Orders: null,
