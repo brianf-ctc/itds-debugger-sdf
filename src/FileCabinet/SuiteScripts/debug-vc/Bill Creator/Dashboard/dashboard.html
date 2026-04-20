@@ -350,6 +350,7 @@
                                                 <th>PO</th>
                                                 <th>Status</th>
                                                 <th>Location</th>
+                                                <th>Disc. Freight</th>
                                                 <th>Last Message</th>
                                             </tr>
                                         </thead>
@@ -366,6 +367,7 @@
                                                 <th>PO</th>
                                                 <th>Status</th>
                                                 <th>Location</th>
+                                                <th>Disc. Freight</th>
                                                 <th>Last Message</th>
                                             </tr>
                                         </tfoot>
@@ -442,6 +444,11 @@
                                                         data: 'poLoc'
                                                     },
                                                     {
+                                                        data: 'discountedFreight',
+                                                        render: $.fn.dataTable.render.number(',', '.', 2),
+                                                        defaultContent: '0.00'
+                                                    },
+                                                    {
                                                         data: 'logs' //,
                                                         //"render": function(data, type, row) {
                                                         //return data.split("\r\n").join("<br/>");
@@ -451,7 +458,7 @@
                                                 columnDefs: [
                                                     {
                                                         className: 'dt-body-right',
-                                                        targets: [4]
+                                                        targets: [4, 10]
                                                     },
                                                     {
                                                         className: 'dt-body-left',
@@ -459,7 +466,7 @@
                                                     },
                                                     {
                                                         width: '25%',
-                                                        targets: [10]
+                                                        targets: [11]
                                                     }
                                                 ],
                                                 order: [[6, 'asc']]

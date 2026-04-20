@@ -407,6 +407,15 @@ define(['N/log', 'N/search', 'N/format', '../../CTC_VC2_Constants'], function (
             returnObj.logs = logs;
         }
 
+        returnObj.discountedFreight = 0;
+        if (billJson.discounted && Array.isArray(billJson.discounted)) {
+            billJson.discounted.forEach(function (entry) {
+                if (!entry.applied) {
+                    returnObj.discountedFreight += parseFloat(entry.amount) || 0;
+                }
+            });
+        }
+
         return returnObj;
     }
 
