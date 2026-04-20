@@ -219,14 +219,14 @@ define(function (require) {
                                 order_num: lineInfo.OrderDetail_ID || 'NA',
                                 order_status: orderInfo.Status || 'NA',
 
-                                order_date: orderInfo.DateBooked || 'NA',
+                                order_date: vc2_util.parseToStandardDate(orderInfo.DateBooked) || 'NA',
                                 ship_date: 'NA',
                                 order_eta: 'NA',
                                 deliv_date: 'NA',
                                 deliv_eta: 'NA',
                                 prom_date: 'NA',
-                                start_date: vc2_util.parseToVCDateStandard(orderInfo.PopStartDate || ''),
-                                end_date: vc2_util.parseToVCDateStandard(orderInfo.PopEndDate || ''),
+                                start_date: vc2_util.parseToStandardDate(orderInfo.PopStartDate || ''),
+                                end_date: vc2_util.parseToStandardDate(orderInfo.PopEndDate || ''),
 
                                 item_num: lineInfo.Item || 'NA',
                                 item_sku: 'NA',

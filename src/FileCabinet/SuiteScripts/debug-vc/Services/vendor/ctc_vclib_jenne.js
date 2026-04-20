@@ -277,8 +277,8 @@ define(function (require) {
 
                 util.extend(orderInfo, {
                     order_num: orderNode.OrderNumber,
-                    order_date: moment(orderNode.OrderDate, 'YYYY-MM-DD'),
-                    ship_date: moment(orderNode.DateShipped, 'MM/DD/YYYY'),
+                    order_date: vc2_util.parseToStandardDate(orderNode.OrderDate) || 'NA',
+                    ship_date: vc2_util.parseToStandardDate(orderNode.DateShipped) || 'NA',
                     carrier: 'NA',
                     line_num: 'NA',
                     item_num: 'NA',
@@ -324,7 +324,7 @@ define(function (require) {
                 util.extend(shipData, {
                     carrier: shipNode.ShipVia,
                     tracking: shipNode.TrackingNo,
-                    ship_date: moment(shipNode.DateShipped)
+                    ship_date: vc2_util.parseToStandardDate(shipNode.DateShipped) || 'NA'
                 });
 
                 var shipDetails =
@@ -457,8 +457,8 @@ define(function (require) {
                             order_num: orderResult.OrderNumber,
                             order_status: 'NA',
 
-                            order_date: orderResult.OrderDate || 'NA',
-                            ship_date: orderResult.DateShipped || 'NA',
+                            order_date: vc2_util.parseToStandardDate(orderResult.OrderDate) || 'NA',
+                            ship_date: vc2_util.parseToStandardDate(orderResult.DateShipped) || 'NA',
                             order_eta: 'NA',
                             deliv_eta: 'NA',
                             deliv_date: 'NA',
@@ -488,7 +488,7 @@ define(function (require) {
                         util.extend(itemObj, {
                             carrier: shipNode.ShipVia,
                             tracking_num: shipNode.TrackingNo,
-                            ship_date: shipNode.DateShipped || 'NA'
+                            ship_date: vc2_util.parseToStandardDate(shipNode.DateShipped) || 'NA'
                         });
 
                         var shipDetails = shipNode.ASNcartonDetails

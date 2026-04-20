@@ -345,7 +345,7 @@ define(function (require) {
                             // hardware (aka traditional) shipment date
                             case 'SHIPMENTDATE':
                                 lineData.ship_date =
-                                    LibOrderStatus.getVendorValue(statusData.DateTime[0]) ||
+                                    vc2_util.parseToStandardDate(LibOrderStatus.getVendorValue(statusData.DateTime[0])) ||
                                     lineData.ship_date;
                                 break;
                             case 'LINELEVELHOLD':
@@ -389,10 +389,10 @@ define(function (require) {
                 }
                 // promised delivery date or requested/estimated ship date for hardware
                 lineData.order_eta =
-                    LibOrderStatus.getVendorValue(ciscoLine.PromisedDeliveryDateTime) ||
-                    ship_eta ||
+                    vc2_util.parseToStandardDate(LibOrderStatus.getVendorValue(ciscoLine.PromisedDeliveryDateTime)) ||
+                    vc2_util.parseToStandardDate(ship_eta) ||
                     lineData.order_eta;
-                lineData.deliv_eta = delivery_eta || lineData.deliv_eta;
+                lineData.deliv_eta = vc2_util.parseToStandardDate(delivery_eta) || lineData.deliv_eta;
                 // set item values
                 var item = ciscoLine.Item;
                 if (item) {
@@ -807,7 +807,7 @@ define(function (require) {
                                                       ) || 'NA'
                                                     : 'NA',
                                             OrderDate:
-                                                vc2_util.parseToVCDateStandard(
+                                                vc2_util.parseToStandardDate(
                                                     orderHeaders.OrderDateTime
                                                 ) || 'NA',
                                             QuoteOrderNum:

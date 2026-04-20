@@ -352,7 +352,7 @@ define(function (require) {
                                 order_num: orderData.VendorOrderNum || 'NA',
                                 order_status: orderData.Status || 'NA',
 
-                                order_date: orderData.OrderDate || 'NA',
+                                order_date: vc2_util.parseToStandardDate(orderData.OrderDate) || 'NA',
                                 ship_date: 'NA',
                                 order_eta: 'NA',
                                 deliv_eta: 'NA',

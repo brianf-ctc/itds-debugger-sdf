@@ -305,10 +305,10 @@ define(function (require) {
 
                 util.extend(shipData, {
                     quantity: shipData.quantity + parseFloat(shipmentDetail.quantity),
-                    order_date: shipmentDetail.invoiceDate,
-                    ship_date: shipmentDetail.shippedDate,
-                    deliv_eta: shipmentDetail.estimatedDeliveryDate,
-                    order_eta: shipmentDetail.estimatedShipDate
+                    order_date: vc2_util.parseToStandardDate(shipmentDetail.invoiceDate) || 'NA',
+                    ship_date: vc2_util.parseToStandardDate(shipmentDetail.shippedDate) || 'NA',
+                    deliv_eta: vc2_util.parseToStandardDate(shipmentDetail.estimatedDeliveryDate) || 'NA',
+                    order_eta: vc2_util.parseToStandardDate(shipmentDetail.estimatedShipDate) || 'NA'
                 });
 
                 if (vc2_util.isEmpty(shipmentDetail.carrierDetails)) continue;
@@ -455,7 +455,7 @@ define(function (require) {
             var lineData = {
                 order_num: ingramLine.subOrderNumber || 'NA',
                 subOrderNum: ingramLine.subOrderNumber || 'NA',
-                order_date: orderDetails.ingramOrderDate || 'NA',
+                order_date: vc2_util.parseToStandardDate(orderDetails.ingramOrderDate) || 'NA',
                 order_status: orderDetails.orderStatus || 'NA',
                 line_num: ingramLine.customerLineNumber || ingramLine.ingramOrderLineNumber || 'NA',
                 vendor_lineno: ingramLine.vendorSalesOrderLineNumber || 'NA',

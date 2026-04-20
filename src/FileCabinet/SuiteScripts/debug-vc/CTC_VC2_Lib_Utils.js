@@ -13,6 +13,10 @@
  * @author brianf@nscatalyst.com
  * @description Core utility helpers used across VAR Connect 2.x scripts (logging, dates, arrays, HTTP, etc.).
  *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        Added parseToStandardDate, standardDateToObj, dateObjToNSDate for normalized vendor date handling
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
@@ -664,6 +668,89 @@ define(function (require) {
             }
             return returnVal;
         },
+
+        /**
+         * Normalizes any date input (string or Date object) to STANDARD_DATE_FORMAT (MM/DD/YYYY).
+         * Use this for all vendor-received dates before storing or processing.
+         * @param {string|Date} dateValue - Raw date from vendor response
+         * @param {string} [parseformat] - Optional moment parse format hint
+         * @returns {string|null} Date string in MM/DD/YYYY or null if invalid/empty
+         */
+        parseToStandardDate: function (dateValue, parseformat) {
+            var logTitle = [LogTitle, 'parseToStandardDate'].join('::');
+
+            var returnValue = null;
+
+            try {
+                if (!dateValue || dateValue == 'NA') return null;
+
+                var STANDARD_FORMAT = vc2_constant.GLOBAL.STANDARD_DATE_FORMAT;
+                returnValue = parseformat
+                    ? momentLib(dateValue, parseformat).format(STANDARD_FORMAT)
+                    : momentLib(dateValue).format(STANDARD_FORMAT);
+
+                if (returnValue === 'Invalid date') returnValue = null;
+            } catch (error) {
+                vc2_util.log(logTitle, '#error', error);
+                returnValue = null;
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * Converts a STANDARD_DATE_FORMAT (MM/DD/YYYY) string to a JavaScript Date object.
+         * @param {string} dateStr - Date string in MM/DD/YYYY format
+         * @returns {Date|null} JS Date object or null if invalid/empty
+         */
+        standardDateToObj: function (dateStr) {
+            var logTitle = [LogTitle, 'standardDateToObj'].join('::');
+
+            var returnValue = null;
+
+            try {
+                if (!dateStr || dateStr == 'NA') return null;
+
+                var STANDARD_FORMAT = vc2_constant.GLOBAL.STANDARD_DATE_FORMAT;
+                var parsed = momentLib(dateStr, STANDARD_FORMAT);
+
+                if (parsed.isValid()) {
+                    returnValue = parsed.toDate();
+                }
+            } catch (error) {
+                vc2_util.log(logTitle, '#error', error);
+                returnValue = null;
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * Converts a JavaScript Date object to a NetSuite-formatted date string
+         * using the account's date format preference. Safe for record.setValue on DATE fields.
+         * @param {Date} dateObj - JS Date object
+         * @returns {string|null} NS-formatted date string or null if invalid
+         */
+        dateObjToNSDate: function (dateObj) {
+            var logTitle = [LogTitle, 'dateObjToNSDate'].join('::');
+
+            var returnValue = null;
+
+            try {
+                if (!dateObj) return null;
+
+                returnValue = ns_format.format({
+                    value: dateObj,
+                    type: ns_format.Type.DATE
+                });
+            } catch (error) {
+                vc2_util.log(logTitle, '#error', error);
+                returnValue = null;
+            }
+
+            return returnValue;
+        },
+
         /**
          * Attempts to parse a date from a string using multiple heuristics, returns formatted string.
          * @param {{dateString?:string}|string} option

@@ -221,12 +221,12 @@ define(function (require) {
                         util.extend(orderItem, {
                             order_status: orderDetail.purchaseOrderStatus,
                             order_num: dellOrder.orderNumber || 'NA',
-                            order_date: orderDetail.purchaseOrderDate || 'NA',
-                            order_eta: dellOrder.estimatedShipmentDate || 'NA',
-                            deliv_eta: dellOrder.estimatedDeliveryDate || 'NA',
+                            order_date: vc2_util.parseToStandardDate(orderDetail.purchaseOrderDate) || 'NA',
+                            order_eta: vc2_util.parseToStandardDate(dellOrder.estimatedShipmentDate) || 'NA',
+                            deliv_eta: vc2_util.parseToStandardDate(dellOrder.estimatedDeliveryDate) || 'NA',
 
-                            ship_date: dellOrder.actualShipmentDate || 'NA',
-                            deliv_date: dellOrder.actualDeliveryDate || 'NA',
+                            ship_date: vc2_util.parseToStandardDate(dellOrder.actualShipmentDate) || 'NA',
+                            deliv_date: vc2_util.parseToStandardDate(dellOrder.actualDeliveryDate) || 'NA',
 
                             carrier: dellOrder.carrierName || 'NA',
                             serial_num: 'NA',

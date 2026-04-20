@@ -163,14 +163,15 @@ define(function (require) {
                         Helper.getNodeValue(itemNode.parentNode.parentNode, 'Code') || 'NA',
 
                     order_date:
-                        Helper.getNodeValue(itemNode.parentNode.parentNode, 'PODatetime') || 'NA',
-                    ship_date: Helper.getNodeValue(itemNode, 'ShipDatetime') || 'NA',
-                    order_eta: Helper.getNodeValue(itemNode, 'EstimatedShipDate') || 'NA',
+                        vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode.parentNode.parentNode, 'PODatetime')) || 'NA',
+                    ship_date: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'ShipDatetime')) || 'NA',
+                    order_eta: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'EstimatedShipDate')) || 'NA',
 
                     deliv_eta:
-                        Helper.getNodeValue(itemNode, 'EstimatedDeliveryDate') ||
-                        Helper.getNodeValue(itemNode, 'EstimateDeliveryDate') ||
-                        'NA',
+                        vc2_util.parseToStandardDate(
+                            Helper.getNodeValue(itemNode, 'EstimatedDeliveryDate') ||
+                            Helper.getNodeValue(itemNode, 'EstimateDeliveryDate')
+                        ) || 'NA',
                     deliv_date: 'NA',
                     prom_date: 'NA',
 

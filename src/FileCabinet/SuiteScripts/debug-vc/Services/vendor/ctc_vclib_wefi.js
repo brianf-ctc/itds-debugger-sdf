@@ -171,7 +171,7 @@ define(function (require) {
                             line_status: wfOrder.statusCode,
                             ship_qty: wfInvoiceLine.quantity,
                             order_date: '',
-                            ship_date: shippedDate,
+                            ship_date: vc2_util.parseToStandardDate(shippedDate) || 'NA',
                             order_eta: '', // Not available on the API
                             order_eta_ship: '',
                             //order_num: wfInvoiceLine.invoiceId.toString(),	// v1.10

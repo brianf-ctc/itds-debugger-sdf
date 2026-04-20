@@ -221,9 +221,9 @@ define(function (require) {
                     order_num: Helper.getNodeValue(parentNode, 'ORDERNUM') || 'NA',
                     order_status: Helper.getNodeValue(parentNode, 'MESSAGE') || 'NA',
 
-                    order_date: Helper.getNodeValue(parentNode, 'DATE') || 'NA',
+                    order_date: vc2_util.parseToStandardDate(Helper.getNodeValue(parentNode, 'DATE')) || 'NA',
                     ship_date: 'NA',
-                    order_eta: Helper.getNodeValue(itemNode, 'ETA') || 'NA',
+                    order_eta: vc2_util.parseToStandardDate(Helper.getNodeValue(itemNode, 'ETA')) || 'NA',
                     deliv_eta: 'NA',
                     deliv_date: 'NA',
                     prom_date: 'NA',
