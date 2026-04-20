@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Replaced moment strict calls with vendorDateToObj/formatToVCDate pipeline for bill_date, due_date, parseDate
  * 2026-04-20   brianf                CST-5022: Added explicit format array and strict mode to 4 unsafe moment() calls to prevent date corruption on ISO date strings
  * 2026-03-17   brianf                Converted AMD module loading and fixed process() catch error-map logging reference
  * 2026-03-02   brianf                Added comprehensive inline comments throughout all Helper functions, process(), and addNote()
@@ -96,15 +97,7 @@ define(function (require) {
             try {
                 // Parse the raw date string with moment; skip placeholder 'NA' and empty values
                 if (dateString && dateString.length > 0 && dateString != 'NA') {
-                    dateValue = moment(dateString, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(); // [ CodeMaster ] CST-5022: added explicit format array + strict mode to prevent date misparse
-                }
-
-                // Convert JS Date to a NetSuite-formatted date string (respects account date format preference)
-                if (dateValue) {
-                    dateValue = ns_format.format({
-                        value: dateValue,
-                        type: ns_format.Type.DATE
-                    });
+                    dateValue = vc2_util.parseToStandardDate(dateString);
                 }
 
                 returnValue = dateValue;
@@ -745,7 +738,7 @@ define(function (require) {
                     custrecord_ctc_vc_bill_file_position: i + 1, // Ordinal position within this batch
                     custrecord_ctc_vc_bill_po: billObj.po, // Raw vendor PO number string
                     custrecord_ctc_vc_bill_number: billObj.invoice, // Vendor invoice number
-                    custrecord_ctc_vc_bill_date: moment(billObj.date, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
+                    custrecord_ctc_vc_bill_date: vc2_util.vendorDateToObj(billObj.date),
                     custrecord_ctc_vc_bill_proc_status: 1, // 1 = PENDING (initial status)
                     custrecord_ctc_vc_bill_integration: configObj.id, // Bill vendor config record ID
                     custrecord_ctc_vc_bill_src: billDataArr[i].xmlStr // Original raw XML/JSON source string
@@ -781,9 +774,9 @@ define(function (require) {
                     if (!manualDueDate) {
                         var dueDays = Helper.fetchVendorDueDate(poData.entityId);
                         if (dueDays !== null) {
-                            dueDate = moment(billObj.date, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true) // [ CodeMaster ] CST-5022: explicit format array + strict mode
-                                .add(parseInt(dueDays), 'days')
-                                .format('MM/DD/YYYY');
+                            var billDateObj = vc2_util.vendorDateToObj(billObj.date);
+                            dueDate = moment(billDateObj)
+                                .add(parseInt(dueDays), 'days').format('MM/DD/YYYY');
                             billFileNotes.push(
                                 'Due date calculated based on vendor terms (' + dueDays + ' days)'
                             );
@@ -796,7 +789,7 @@ define(function (require) {
                 }
 
                 if (dueDate !== null) {
-                    billFileValues.custrecord_ctc_vc_bill_due_date = moment(dueDate, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(); // [ CodeMaster ] CST-5022: explicit format array + strict mode
+                    billFileValues.custrecord_ctc_vc_bill_due_date = vc2_util.vendorDateToObj(dueDate);
                     if (manualDueDate) {
                         billFileValues.custrecord_ctc_vc_bill_due_date_f_file = true;
                     }

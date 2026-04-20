@@ -502,7 +502,7 @@ define(function (require) {
                 var DTLD10 = xmlLine.DTLD10;
                 var SUMS10 = xmlLine.SUMS10;
 
-                ordObj.date = moment(HDRH10.invoice_date, 'YYMMDD').format('MM/DD/YYYY');
+                ordObj.date = vc2_util.formatToVCDate(HDRH10.invoice_date, 'YYMMDD');
                 ordObj.invoice = HDRH10.invoice_number;
                 ordObj.po = HDRH10.purchase_order_number;
                 ordObj.charges = {};
@@ -513,10 +513,10 @@ define(function (require) {
                 // set due date if it exists
                 for (var h = 0; h < HDRH66.length; h++) {
                     if (HDRH66[h].payment_amount_qualifier == 'ZZ') {
-                        ordObj.duedate = moment(
+                        ordObj.duedate = vc2_util.formatToVCDate(
                             HDRH66[h].scheduled_payment_date,
                             'YYYYMMDD'
-                        ).format('MM/DD/YYYY');
+                        );
                     }
                 }
 
@@ -746,7 +746,7 @@ define(function (require) {
                 var returnArr = [];
                 arrTxnList.forEach(function (txnObj) {
                     var orderObj = {
-                        date: vc2_util.parseToVCDate(txnObj.HDRH10.invoice_date, 'YYMMDD'),
+                        date: vc2_util.formatToVCDate(txnObj.HDRH10.invoice_date, 'YYMMDD'),
                         invoice: txnObj.HDRH10.invoice_number,
                         po: txnObj.HDRH10.purchase_order_number || '', // adding PO number from HDRH10
                         charges: (function (SUMS10) {
@@ -777,7 +777,7 @@ define(function (require) {
                                     charge.payment_amount_qualifier === 'ZZ' &&
                                     charge.scheduled_payment_date
                                 ) {
-                                    dueDate = vc2_util.parseToVCDate(
+                                    dueDate = vc2_util.formatToVCDate(
                                         charge.scheduled_payment_date,
                                         'YYYYMMDD'
                                     );

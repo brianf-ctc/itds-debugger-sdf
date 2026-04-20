@@ -250,7 +250,7 @@ define(function (require) {
                     // base template copied per sub-order
                     VendorOrderNum: orderResult.ingramOrderNumber, // placeholder; replaced with subOrderNumber below
                     IngramOrderNum: orderResult.ingramOrderNumber, // parent ingram order number
-                    OrderDate: vc2_util.parseToVCDateStandard(orderResult.ingramOrderDate), // normalized order date
+                    OrderDate: vc2_util.formatToVCDate(orderResult.ingramOrderDate), // normalized order date
                     OrderNum: orderResult.customerOrderNumber, // customer PO/reference
                     Status: orderResult.orderStatus, // parent status
                     Total: orderResult.orderTotal // parent total amount
@@ -305,10 +305,10 @@ define(function (require) {
 
                 util.extend(shipData, {
                     quantity: shipData.quantity + parseFloat(shipmentDetail.quantity),
-                    order_date: vc2_util.parseToStandardDate(shipmentDetail.invoiceDate) || 'NA',
-                    ship_date: vc2_util.parseToStandardDate(shipmentDetail.shippedDate) || 'NA',
-                    deliv_eta: vc2_util.parseToStandardDate(shipmentDetail.estimatedDeliveryDate) || 'NA',
-                    order_eta: vc2_util.parseToStandardDate(shipmentDetail.estimatedShipDate) || 'NA'
+                    order_date: vc2_util.formatToVCDate(shipmentDetail.invoiceDate) || 'NA',
+                    ship_date: vc2_util.formatToVCDate(shipmentDetail.shippedDate) || 'NA',
+                    deliv_eta: vc2_util.formatToVCDate(shipmentDetail.estimatedDeliveryDate) || 'NA',
+                    order_eta: vc2_util.formatToVCDate(shipmentDetail.estimatedShipDate) || 'NA'
                 });
 
                 if (vc2_util.isEmpty(shipmentDetail.carrierDetails)) continue;
@@ -455,7 +455,7 @@ define(function (require) {
             var lineData = {
                 order_num: ingramLine.subOrderNumber || 'NA',
                 subOrderNum: ingramLine.subOrderNumber || 'NA',
-                order_date: vc2_util.parseToStandardDate(orderDetails.ingramOrderDate) || 'NA',
+                order_date: vc2_util.formatToVCDate(orderDetails.ingramOrderDate) || 'NA',
                 order_status: orderDetails.orderStatus || 'NA',
                 line_num: ingramLine.customerLineNumber || ingramLine.ingramOrderLineNumber || 'NA',
                 vendor_lineno: ingramLine.vendorSalesOrderLineNumber || 'NA',
@@ -993,8 +993,8 @@ define(function (require) {
                     /// SET the date values
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!lineData[dateField] || lineData[dateField] == 'NA') return;
-                        lineData[dateField] = vc2_util.parseToVCDateStandard(lineData[dateField]);
-                        var parsedDate = vc2_util.parseToVCDateStandard(lineData[dateField]);
+                        lineData[dateField] = vc2_util.formatToVCDate(lineData[dateField]);
+                        var parsedDate = vc2_util.formatToVCDate(lineData[dateField]);
                         lineData[dateField] =
                             parsedDate && !parsedDate.match(/Invalid/i)
                                 ? parsedDate
@@ -1182,8 +1182,8 @@ define(function (require) {
                         // Date normalization
                         DATE_FIELDS.forEach(function (dateField) {
                             if (!lineData[dateField] || lineData[dateField] === 'NA') return;
-                            lineData[dateField] = vc2_util.parseToVCDateStandard(lineData[dateField]);
-                            var parsedDate = vc2_util.parseToVCDateStandard(lineData[dateField]);
+                            lineData[dateField] = vc2_util.formatToVCDate(lineData[dateField]);
+                            var parsedDate = vc2_util.formatToVCDate(lineData[dateField]);
                             lineData[dateField] =
                                 parsedDate && !parsedDate.match(/Invalid/i)
                                     ? parsedDate

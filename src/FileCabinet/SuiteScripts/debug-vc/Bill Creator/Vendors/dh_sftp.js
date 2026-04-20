@@ -12,6 +12,10 @@
  * @author brianf@nscatalyst.com
  * @description Vendor connector for D&H SFTP bill files (parsing flat-file invoice data).
  *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
@@ -56,7 +60,7 @@ define(function (require) {
                 vc2_util.log(logTitle, '##### START NEW LINE #####');
                 currentBillObj = {
                     invoice: trimPadding(rowData[4]),
-                    date: trimPadding(rowData[6]),
+                    date: vc2_util.formatToVCDate(trimPadding(rowData[6])),
                     po: trimPadding(rowData[7]),
                     charges: {
                         tax: 0,

@@ -12,13 +12,18 @@
  * @author brianf@nscatalyst.com
  * @description Vendor connector for Tech Data API to retrieve invoice XML by PO.
  *
+ * CHANGELOGS
+ * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
 
-define(['N/xml', 'N/https', '../Libraries/moment', '../Libraries/lodash'], function (
+define(['N/xml', 'N/https', '../../CTC_VC2_Lib_Utils', '../Libraries/moment', '../Libraries/lodash'], function (
     ns_xml,
     ns_https,
+    vc2_util,
     moment,
     lodash
 ) {
@@ -154,7 +159,7 @@ define(['N/xml', 'N/https', '../Libraries/moment', '../Libraries/lodash'], funct
 
             log.debug('td: rawDate', input + ': ' + rawDate);
 
-            myObj.date = moment(rawDate, 'MM/DD/YY').format('MM/DD/YYYY');
+            myObj.date = vc2_util.formatToVCDate(rawDate);
 
             // myObj.invoice = ns_xml.XPath.select({
             //   node: xmlObj,

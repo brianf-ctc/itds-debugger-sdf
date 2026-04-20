@@ -15,9 +15,11 @@
  * @NApiVersion 2.x
  * @NModuleScope Public
  *
- * Version		Date            		Author		    Remarks
- * 1.00			Oct 03, 2022			jjacob			Initial version
- * 1.10			Jan 10, 2023			jjacob			Group invoice lines by inv detail id
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ * 2023-01-10   jjacob        Group invoice lines by inv detail id
+ * 2022-10-03   jjacob        Initial version
  */
 
 define(['N/error', 'N/search', 'N/crypto', '../../CTC_VC2_Lib_Utils'], function (
@@ -139,7 +141,7 @@ define(['N/error', 'N/search', 'N/crypto', '../../CTC_VC2_Lib_Utils'], function 
 
                 var objInvoice = {
                     invoice: wfInvoice.documentNumber,
-                    date: wfInvoice.documentDate,
+                    date: vc2_util.formatToVCDate(wfInvoice.documentDate),
                     po: wfInvoice.purchaseOrderNumber,
                     total: wfInvoice.documentAmount,
                     charges: {

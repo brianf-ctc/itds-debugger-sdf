@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
  * 2026-02-27   brianf                Updated script header for standards compliance
  *
  * @NApiVersion 2.x
@@ -135,7 +136,7 @@ define(function (require) {
                 objData = {};
 
                 objData.po = objInvoice.CustomerPO;
-                objData.date = objInvoice.DocDate;
+                objData.date = vc2_util.formatToVCDate(objInvoice.DocDate);
                 objData.invoice = objInvoice.DocNumber;
                 objData.total = objInvoice.Total;
 
@@ -159,7 +160,7 @@ define(function (require) {
             objInvoice = responseBody;
 
             objData.po = objInvoice.Order_ID;
-            objData.date = objInvoice.DocDate;
+            objData.date = vc2_util.formatToVCDate(objInvoice.DocDate);
             objData.invoice = objInvoice.DocNumber;
             objData.total = objInvoice.Total;
 

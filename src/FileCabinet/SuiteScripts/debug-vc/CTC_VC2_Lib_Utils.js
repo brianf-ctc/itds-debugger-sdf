@@ -15,7 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
- * 2026-04-21   brianf        Added parseToStandardDate, standardDateToObj, dateObjToNSDate for normalized vendor date handling
+ * 2026-04-21   brianf        Added vendorDateToObj, formatToVCDate, vcDateToObj; kept legacy wrappers for normalized vendor date handling
  *
  * @NApiVersion 2.x
  * @NModuleScope Public
@@ -611,10 +611,7 @@ define(function (require) {
          * @returns {string}
          */
         parseToVCDateStandard: function (dateStr, parseformat) {
-            if (!dateStr || dateStr == 'NA') return 'NA';
-
-            var STANDARD_FORMAT = vc2_constant.GLOBAL.STANDARD_DATE_FORMAT;
-            return momentLib(dateStr, parseformat).format(STANDARD_FORMAT);
+            return this.formatToVCDate(dateStr, parseformat) || 'NA';
         },
         /**
          * Formats a date to a NetSuite DATE string using account format.
@@ -670,24 +667,51 @@ define(function (require) {
         },
 
         /**
-         * Normalizes any date input (string or Date object) to STANDARD_DATE_FORMAT (MM/DD/YYYY).
-         * Use this for all vendor-received dates before storing or processing.
-         * @param {string|Date} dateValue - Raw date from vendor response
+         * Converts an external/vendor date value to a JavaScript Date object.
+         * Use this immediately after receiving date values from HTTP, XML, or SFTP sources.
+         * @param {string|Date} dateValue - Raw date from external/vendor response
          * @param {string} [parseformat] - Optional moment parse format hint
-         * @returns {string|null} Date string in MM/DD/YYYY or null if invalid/empty
+         * @returns {Date|null} JS Date object or null if invalid/empty
          */
-        parseToStandardDate: function (dateValue, parseformat) {
-            var logTitle = [LogTitle, 'parseToStandardDate'].join('::');
+        vendorDateToObj: function (dateValue, parseformat) {
+            var logTitle = [LogTitle, 'vendorDateToObj'].join('::');
 
             var returnValue = null;
 
             try {
                 if (!dateValue || dateValue == 'NA') return null;
 
+                var parsed = parseformat ? momentLib(dateValue, parseformat) : momentLib(dateValue);
+
+                if (parsed.isValid()) {
+                    returnValue = parsed.toDate();
+                }
+            } catch (error) {
+                vc2_util.log(logTitle, '#error', error);
+                returnValue = null;
+            }
+
+            return returnValue;
+        },
+
+        /**
+         * Normalizes an external/vendor date value into the VC standard date string (MM/DD/YYYY).
+         * This always parses inbound values to a Date object first before formatting.
+         * @param {string|Date} dateValue - Raw date from external/vendor response
+         * @param {string} [parseformat] - Optional moment parse format hint
+         * @returns {string|null} Date string in MM/DD/YYYY or null if invalid/empty
+         */
+        formatToVCDate: function (dateValue, parseformat) {
+            var logTitle = [LogTitle, 'formatToVCDate'].join('::');
+
+            var returnValue = null;
+
+            try {
+                var dateObj = this.vendorDateToObj(dateValue, parseformat);
+                if (!dateObj) return null;
+
                 var STANDARD_FORMAT = vc2_constant.GLOBAL.STANDARD_DATE_FORMAT;
-                returnValue = parseformat
-                    ? momentLib(dateValue, parseformat).format(STANDARD_FORMAT)
-                    : momentLib(dateValue).format(STANDARD_FORMAT);
+                returnValue = momentLib(dateObj).format(STANDARD_FORMAT);
 
                 if (returnValue === 'Invalid date') returnValue = null;
             } catch (error) {
@@ -699,12 +723,22 @@ define(function (require) {
         },
 
         /**
-         * Converts a STANDARD_DATE_FORMAT (MM/DD/YYYY) string to a JavaScript Date object.
+         * Legacy wrapper for VC standard date formatting.
+         * @param {string|Date} dateValue - Raw date value
+         * @param {string} [parseformat] - Optional moment parse format hint
+         * @returns {string|null} Date string in MM/DD/YYYY or null if invalid/empty
+         */
+        parseToStandardDate: function (dateValue, parseformat) {
+            return this.formatToVCDate(dateValue, parseformat);
+        },
+
+        /**
+         * Converts a VC standard date string (MM/DD/YYYY) to a JavaScript Date object.
          * @param {string} dateStr - Date string in MM/DD/YYYY format
          * @returns {Date|null} JS Date object or null if invalid/empty
          */
-        standardDateToObj: function (dateStr) {
-            var logTitle = [LogTitle, 'standardDateToObj'].join('::');
+        vcDateToObj: function (dateStr) {
+            var logTitle = [LogTitle, 'vcDateToObj'].join('::');
 
             var returnValue = null;
 
@@ -723,6 +757,15 @@ define(function (require) {
             }
 
             return returnValue;
+        },
+
+        /**
+         * Legacy wrapper for VC standard date string to object conversion.
+         * @param {string} dateStr - Date string in MM/DD/YYYY format
+         * @returns {Date|null} JS Date object or null if invalid/empty
+         */
+        standardDateToObj: function (dateStr) {
+            return this.vcDateToObj(dateStr);
         },
 
         /**

@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
  * 2026-02-27   brianf                Updated script header for standards compliance
  *
  * @NApiVersion 2.x
@@ -548,8 +549,8 @@ define([
                 var invoiceData = {
                     po: CURRENT.billConfig.poNum,
                     date: invoiceDetailsResp.invoicedate
-                        ? moment(invoiceDetailsResp.invoicedate, 'YYYY-MM-DD').format('MM/DD/YYYY')
-                        : moment().format('MM/DD/YYYY'),
+                        ? vc2_util.formatToVCDate(invoiceDetailsResp.invoicedate)
+                        : vc2_util.formatToVCDate(new Date()),
                     invoice: invoiceDetailsResp.globalorderid,
                     total: vc2_util.parseFloat(invoiceDetailsResp.totalamount),
                     charges: {
@@ -561,7 +562,7 @@ define([
                     },
                     carrier: invoiceDetailsResp.carrier || '',
                     shipDate: invoiceDetailsResp.hasOwnProperty('shipdate')
-                        ? moment(invoiceDetailsResp.shipdate, 'YYYY-MM-DD').format('MM/DD/YYYY')
+                        ? vc2_util.formatToVCDate(invoiceDetailsResp.shipdate)
                         : 'NA',
                     lines: []
                 };
@@ -693,8 +694,8 @@ define([
                 var invoiceData = {
                     po: CURRENT.billConfig.poNum,
                     date: invoiceDetailsResp.InvoiceDate
-                        ? moment(invoiceDetailsResp.InvoiceDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
-                        : moment().format('MM/DD/YYYY'),
+                        ? vc2_util.formatToVCDate(invoiceDetailsResp.InvoiceDate)
+                        : vc2_util.formatToVCDate(new Date()),
                     invoice: invoiceDetailsResp.InvoiceNumber,
                     total: vc2_util.parseFloat(invoiceTotals.InvoicedAmountDue),
                     charges: {
@@ -829,7 +830,7 @@ define([
 
                 var invoiceDate = Helper.getParamValue(invoiceDetailsResp, 'invoiceDate');
                 if (invoiceDate) {
-                    invoiceData.date = moment(invoiceDate, 'YYYY-MM-DD').format('MM/DD/YYYY');
+                    invoiceData.date = vc2_util.formatToVCDate(invoiceDate);
                 }
                 vc2_util.log(logTitle, '.. invoice data: ', invoiceData);
 

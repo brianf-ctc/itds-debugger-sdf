@@ -12,6 +12,10 @@
  * @author ajdeleon
  * @description Vendor connector for ScanSource API to pull invoice lists and normalize into Bill Creator format.
  *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
@@ -122,7 +126,7 @@ define(function (require) {
                 var objData = {};
 
                 objData.po = objInvoice.PONumber;
-                objData.date = objInvoice.ShipDate; //not scansource
+                objData.date = vc2_util.formatToVCDate(objInvoice.ShipDate);
                 objData.invoice = objInvoice.InvoiceNumber;
                 objData.total = vc2_util.parseFloat(objInvoice.Total);
                 objData.charges = {

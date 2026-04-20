@@ -192,7 +192,7 @@ define(function (require) {
                     if (!orderDetail || !orderDetail.dellOrders) throw 'Missing Dell Order info';
                     var OrderData = {
                         OrderNum: orderDetail.purchaseOrderNumber,
-                        OrderDate: vc2_util.parseToVCDateStandard(orderDetail.purchaseOrderDate),
+                        OrderDate: vc2_util.formatToVCDate(orderDetail.purchaseOrderDate),
                         Status: orderDetail.purchaseOrderStatus
                     };
 
@@ -221,12 +221,12 @@ define(function (require) {
                         util.extend(orderItem, {
                             order_status: orderDetail.purchaseOrderStatus,
                             order_num: dellOrder.orderNumber || 'NA',
-                            order_date: vc2_util.parseToStandardDate(orderDetail.purchaseOrderDate) || 'NA',
-                            order_eta: vc2_util.parseToStandardDate(dellOrder.estimatedShipmentDate) || 'NA',
-                            deliv_eta: vc2_util.parseToStandardDate(dellOrder.estimatedDeliveryDate) || 'NA',
+                            order_date: vc2_util.formatToVCDate(orderDetail.purchaseOrderDate) || 'NA',
+                            order_eta: vc2_util.formatToVCDate(dellOrder.estimatedShipmentDate) || 'NA',
+                            deliv_eta: vc2_util.formatToVCDate(dellOrder.estimatedDeliveryDate) || 'NA',
 
-                            ship_date: vc2_util.parseToStandardDate(dellOrder.actualShipmentDate) || 'NA',
-                            deliv_date: vc2_util.parseToStandardDate(dellOrder.actualDeliveryDate) || 'NA',
+                            ship_date: vc2_util.formatToVCDate(dellOrder.actualShipmentDate) || 'NA',
+                            deliv_date: vc2_util.formatToVCDate(dellOrder.actualDeliveryDate) || 'NA',
 
                             carrier: dellOrder.carrierName || 'NA',
                             serial_num: 'NA',
@@ -313,7 +313,7 @@ define(function (require) {
                 itemArray.forEach(function (itemObj) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField]);
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
                 });
 

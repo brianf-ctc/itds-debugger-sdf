@@ -12,6 +12,10 @@
  * @author ajdeleon
  * @description Vendor connector for Jenne SOAP API to retrieve invoice XML and convert to JSON.
  *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
@@ -96,7 +100,7 @@ define(function (require) {
 
                 //set values
                 objData.po = Helper.getTagContent(invoiceChildNode, 'PONumber');
-                objData.date = Helper.getTagContent(invoiceChildNode, 'OrderDate');
+                objData.date = vc2_util.formatToVCDate(Helper.getTagContent(invoiceChildNode, 'OrderDate'));
                 objData.invoice = Helper.getTagContent(invoiceChildNode, 'InvoiceNumber');
                 objData.total = vc2_util.parseFloat(
                     Helper.getTagContent(invoiceChildNode, 'InvoiceAmount')

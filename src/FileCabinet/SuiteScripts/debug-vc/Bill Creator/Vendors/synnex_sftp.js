@@ -12,6 +12,10 @@
  * @author brianf@nscatalyst.com
  * @description Vendor connector for Synnex SFTP invoice files and XML-to-JSON conversion.
  *
+ * CHANGELOGS
+ * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Switched bill-create vendor dates to vc2_util.formatToVCDate
+ *
  * @NApiVersion 2.x
  * @NModuleScope Public
  */
@@ -235,7 +239,7 @@ define(['N/xml', 'N/sftp', '../../CTC_VC2_Lib_Utils', '../Libraries/moment'], fu
 
             var myObj = {
                 po: invoiceData.CustomerPONumber,
-                date: invoiceData.InvoiceDate,
+                date: vc2_util.formatToVCDate(invoiceData.InvoiceDate),
                 invoice: invoiceData.InvoiceNumber,
                 charges: {
                     tax: parseFloat(invoiceData.Summary.SalesTax),
@@ -324,7 +328,7 @@ define(['N/xml', 'N/sftp', '../../CTC_VC2_Lib_Utils', '../Libraries/moment'], fu
 
             var myObj = {
                 po: invoiceData.CustomerPONumber,
-                date: invoiceData.InvoiceDate,
+                date: vc2_util.formatToVCDate(invoiceData.InvoiceDate),
                 invoice: invoiceData.InvoiceNumber,
                 charges: {
                     tax: parseFloat(invoiceData.Summary.SalesTax),
@@ -398,7 +402,7 @@ define(['N/xml', 'N/sftp', '../../CTC_VC2_Lib_Utils', '../Libraries/moment'], fu
 
             var myObj = {
                 po: invoiceData.CustomerPONumber,
-                date: invoiceData.InvoiceDate,
+                date: vc2_util.formatToVCDate(invoiceData.InvoiceDate),
                 invoice: invoiceData.InvoiceNumber,
                 charges: {
                     tax: parseFloat(invoiceData.Summary.SalesTax),

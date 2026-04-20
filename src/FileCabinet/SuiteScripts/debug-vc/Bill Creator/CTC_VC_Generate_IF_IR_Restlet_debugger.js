@@ -16,6 +16,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Replaced moment(shipDate).toDate() with vendorDateToObj
  * 2026-03-16   brianf                Fixed undefined util usage, hardened null-safe payload/serial handling, and aligned entry-point naming for debugger flow
  *
  * @NApiVersion 2.x
@@ -190,10 +191,7 @@ define(function (require) {
                                     ? BillFileRec.JSON.shipDate
                                     : BillFileRec.JSON.date;
 
-                            var nsShipDate = ns_format.parse({
-                                value: moment(shipDate).toDate(),
-                                type: ns_format.Type.DATE
-                            });
+                            var nsShipDate = vc2_util.vendorDateToObj(shipDate);
 
                             vc2_util.log(logTitle, '... shipDate: ', [shipDate, nsShipDate]);
                             return nsShipDate;

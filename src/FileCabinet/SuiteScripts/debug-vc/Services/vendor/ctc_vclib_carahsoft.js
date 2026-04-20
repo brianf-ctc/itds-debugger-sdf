@@ -199,7 +199,7 @@ define(function (require) {
                 arrOrders.forEach(function (orderInfo) {
                     var orderData = {
                         OrderNum: orderInfo.CustomerPO,
-                        OrderDate: vc2_util.parseToVCDateStandard(orderInfo.DateBooked),
+                        OrderDate: vc2_util.formatToVCDate(orderInfo.DateBooked),
                         Status: orderInfo.Status,
                         Total: orderInfo.TotalOrder,
                         VendorOrderNum: orderInfo.Order_ID
@@ -219,14 +219,14 @@ define(function (require) {
                                 order_num: lineInfo.OrderDetail_ID || 'NA',
                                 order_status: orderInfo.Status || 'NA',
 
-                                order_date: vc2_util.parseToStandardDate(orderInfo.DateBooked) || 'NA',
+                                order_date: vc2_util.formatToVCDate(orderInfo.DateBooked) || 'NA',
                                 ship_date: 'NA',
                                 order_eta: 'NA',
                                 deliv_date: 'NA',
                                 deliv_eta: 'NA',
                                 prom_date: 'NA',
-                                start_date: vc2_util.parseToStandardDate(orderInfo.PopStartDate || ''),
-                                end_date: vc2_util.parseToStandardDate(orderInfo.PopEndDate || ''),
+                                start_date: vc2_util.formatToVCDate(orderInfo.PopStartDate || ''),
+                                end_date: vc2_util.formatToVCDate(orderInfo.PopEndDate || ''),
 
                                 item_num: lineInfo.Item || 'NA',
                                 item_sku: 'NA',
@@ -282,7 +282,7 @@ define(function (require) {
                 itemArray.forEach(function (itemObj) {
                     DATE_FIELDS.forEach(function (dateField) {
                         if (!itemObj[dateField] || itemObj[dateField] == 'NA') return;
-                        itemObj[dateField] = vc2_util.parseToVCDateStandard(itemObj[dateField]);
+                        itemObj[dateField] = vc2_util.formatToVCDate(itemObj[dateField]);
                     });
                 });
 

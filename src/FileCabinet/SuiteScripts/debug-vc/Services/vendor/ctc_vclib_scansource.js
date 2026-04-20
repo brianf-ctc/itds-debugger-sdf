@@ -364,7 +364,7 @@ define(function (require) {
                         OrderNum: orderDetail.PONumber || 'NA',
                         VendorOrderNum:
                             orderDetail.SalesOrderNumber || orderDetail.EndUserPO || 'NA',
-                        OrderDate: vc2_util.parseToStandardDate(orderDetail.DateEntered || 'NA'),
+                        OrderDate: vc2_util.formatToVCDate(orderDetail.DateEntered || 'NA'),
                         Total: orderDetail.Total || 'NA',
                         InvoiceNo: 'NA',
                         Source: orderDetail
@@ -422,7 +422,7 @@ define(function (require) {
                             itemObj.serial_num = orderLine.SerialNumbers.join(',');
 
                         (orderLine.ScheduleLines || []).forEach(function (scheduleLine) {
-                            itemObj.order_eta = vc2_util.parseToStandardDate(scheduleLine.EstimatedShipDate) || 'NA';
+                            itemObj.order_eta = vc2_util.formatToVCDate(scheduleLine.EstimatedShipDate) || 'NA';
                         });
 
                         //get tracking number(s) for this item from the invoice tracking info
@@ -458,14 +458,14 @@ define(function (require) {
 
                         (deliveryLine.LineItems || []).forEach(function (lineItem) {
                             var orderItem = {
-                                order_date: vc2_util.parseToStandardDate(orderDetail.DateEntered) || 'NA',
+                                order_date: vc2_util.formatToVCDate(orderDetail.DateEntered) || 'NA',
                                 order_num: orderDetail.SalesOrderNumber,
                                 line_num: lineItem.DeliveryDocumentLineNumber
                                     ? lineItem.DeliveryDocumentLineNumber
                                     : null,
                                 vendorSKU: lineItem.ItemNumber,
                                 ship_qty: parseInt(lineItem.QuantityShipped),
-                                ship_date: vc2_util.parseToStandardDate(deliveryLine.ShippedDate) || 'NA',
+                                ship_date: vc2_util.formatToVCDate(deliveryLine.ShippedDate) || 'NA',
                                 carrier: shipment.carrier,
                                 tracking_num: shipment.tracking.join(', ')
                             };
@@ -531,7 +531,7 @@ define(function (require) {
                         // skip the order_date
                         if (dateField == 'order_date') return;
 
-                        var parsedDate = vc2_util.parseToStandardDate(itemObj[dateField]);
+                        var parsedDate = vc2_util.formatToVCDate(itemObj[dateField]);
 
                         itemObj[dateField] =
                             parsedDate && !parsedDate.match(/Invalid/i)

@@ -14,6 +14,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-21   brianf                CST-5022: Switched bill-create vendor dates to vclib_utils.formatToVCDate
  * 2026-03-19   brianf                Hardened input validation/error handling; standardized module imports; added vclib_error for error
  *                                    logging; refactored processXml as direct library object property; consolidated helper functions
  *                                    (xml2json, getInvoiceDetails, extractInvoicesFromResponse) into Helper object; implemented
@@ -359,7 +360,7 @@ define(function (require) {
 
                     var myObj = {
                         po: invoiceData.CustomerPONumber || stPoNumber,
-                        date: invoiceData.InvoiceDate,
+                        date: vclib_utils.formatToVCDate(invoiceData.InvoiceDate),
                         invoice: invoiceData.InvoiceNumber,
                         charges: {
                             tax: 0,

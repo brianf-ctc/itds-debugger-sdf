@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-21   brianf        CST-5022: Replaced moment strict calls with vendorDateToObj for trandate and duedate
  * 2026-04-20   brianf        CST-5022: Added explicit format array and strict mode to 3 unsafe moment() calls (trandate, fulfillDate, duedate) to prevent date corruption
  * 2026-03-28   brianf        Added id field to success response for MR BILL_LINK mapping; added isError and status to
  *                              validateBill early-return so MR catch block fires correctly
@@ -231,10 +232,7 @@ define(function (require) {
                     /// Set INVOICE NAME
                     tranid: BILLPROC.BILLFILE.JSON.invoice,
                     /// SET the trandate
-                    trandate: ns_format.parse({
-                        value: moment(BILLPROC.BILLFILE.JSON.date, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
-                        type: ns_format.Type.DATE
-                    }),
+                    trandate: vc2_util.vendorDateToObj(BILLPROC.BILLFILE.JSON.date),
                     custbody_ctc_vc_createdby_vc: true,
                     approvalstatus: BILLPROC.CFG.MainCFG.defaultVendorBillStatus || 1
                 };
@@ -249,7 +247,7 @@ define(function (require) {
 
                     if (fulfillDate) {
                         updateBillValues.trandate = ns_format.parse({
-                            value: fulfillDate, // [ CodeMaster ] CST-5022: fulfillDate is already in account date format from search getValue()
+                            value: fulfillDate,
                             type: ns_format.Type.DATE
                         });
                     }
@@ -257,10 +255,7 @@ define(function (require) {
 
                 /// SET DUE DATE
                 if (BILLPROC.BILLFILE.DATA.DUEDATE) {
-                    updateBillValues.duedate = ns_format.parse({
-                        value: moment(BILLPROC.BILLFILE.DATA.DUEDATE, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
-                        type: ns_format.Type.DATE
-                    });
+                    updateBillValues.duedate = vc2_util.vendorDateToObj(BILLPROC.BILLFILE.DATA.DUEDATE);
                 }
 
                 vc2_util.log(logTitle, '*** VALUES *** ', updateBillValues);
