@@ -249,7 +249,7 @@ define(function (require) {
 
                     if (fulfillDate) {
                         updateBillValues.trandate = ns_format.parse({
-                            value: moment(fulfillDate, ['MM/DD/YYYY', 'YYYY-MM-DD', moment.ISO_8601], true).toDate(), // [ CodeMaster ] CST-5022: explicit format array + strict mode
+                            value: fulfillDate, // [ CodeMaster ] CST-5022: fulfillDate is already in account date format from search getValue()
                             type: ns_format.Type.DATE
                         });
                     }
