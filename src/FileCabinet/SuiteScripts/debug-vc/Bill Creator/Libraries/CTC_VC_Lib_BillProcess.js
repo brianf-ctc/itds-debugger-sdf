@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author                Remarks
+ * 2026-04-28   brianf                Fixed negative variance threshold bypass: wrapped Current.TOTAL.VARIANCE in Math.abs() so negative price variances are correctly caught by the threshold check (ST14358)
  * 2026-04-17   brianf                Added dash-insensitive invoice matching in searchExistingBills using formula-based normalization to detect duplicates regardless of dashed/undashed format (CST-5009)
  * 2026-03-30   brianf                Restored vendor filter requirement in searchExistingBills: both entityId and invoiceNo must be present to prevent false-positive bill matches across vendors
  * 2026-03-14   brianf                Simplified reportError by consolidating duplicate error collection, cleaning variance message composition, and streamlining status report text assembly; normalized ctc_lib_utils/ctc_lib_error imports to explicit .js paths
@@ -485,7 +486,7 @@ define(function (require) {
                                         thresholdAmount = vclib_util.forceFloat(thresholdAmount);
                                         if (
                                             thresholdAmount > 0 &&
-                                            thresholdAmount >= Current.TOTAL.VARIANCE
+                                            thresholdAmount >= Math.abs(Current.TOTAL.VARIANCE)
                                         ) {
                                             returnValue.allowed = true;
                                             returnValue.reason = vclib_error.interpret(

@@ -15,6 +15,7 @@
  *
  * CHANGELOGS
  * Date         Author        Remarks
+ * 2026-04-28   brianf        Added human-readable VC Log entry for bill create results with correct logstatus (ST14358)
  * 2026-04-17   brianf        Added dash-insensitive invoice matching in getExistingBill using formula-based normalization to detect duplicates regardless of dashed/undashed format (CST-5009)
  * 2026-03-28   brianf        Removed dead varianceLines block from reduce finally (Restlet never returns this field)
  * 2026-03-25   brianf        Optimized reduce deduping, preserved bill JSON for variance updates, and hardened bill-create and
@@ -319,6 +320,21 @@ define(function (require) {
                     if (!billCreateReq.PARSED_RESPONSE) throw 'Unable to parse response body';
 
                     ReturnObj = billCreateReq.PARSED_RESPONSE;
+
+                    // Log human-readable bill create result to VC Log
+                    if (ReturnObj.msg) {
+                        var vcLogMsg = ReturnObj.msg;
+                        if (ReturnObj.details) vcLogMsg += ' | ' + ReturnObj.details;
+
+                        vc2_util.vcLog({
+                            title: 'Bill Creator | Bill Create - Result',
+                            content: vcLogMsg,
+                            transaction: CurrentData.PO_ID,
+                            status: ReturnObj.logstatus
+                                || vc2_constant.LIST.VC_LOG_STATUS.INFO
+                        });
+                    }
+
                     if (ReturnObj.isError) throw ReturnObj.msg;
                 } catch (error) {
                     var errorResult = vclib_error.log(logTitle, error);
